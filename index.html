@@ -5,48 +5,315 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Streaming DOB App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <style>
+        /* Custom styles for markdown content */
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .markdown-content h1 { font-size: 1.25rem; }
+        .markdown-content h2 { font-size: 1.125rem; }
+        .markdown-content h3 { font-size: 1rem; }
+        .markdown-content p { margin: 0.25rem 0; }
+        .markdown-content strong { font-weight: 600; }
+        .markdown-content em { font-style: italic; }
+        .markdown-content ul, .markdown-content ol { 
+            margin: 0.5rem 0; 
+            padding-left: 1.5rem; 
+        }
+        .markdown-content li { margin: 0.25rem 0; }
+        .markdown-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+            font-style: italic;
+            color: #6b7280;
+        }
+        .typing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .chunk-container {
+            opacity: 0;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">AI Date of Birth Processor</h1>
-        <div class="mb-4">
-            <label for="dob" class="block text-sm font-medium text-gray-700">Enter Date of Birth</label>
-            <input type="date" id="dob" class="mt-1 p-2 w-full border rounded-md">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+        <div class="flex justify-end mb-2">
+            <button id="lang-vi" class="px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">VI</button>
+            <button id="lang-en" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">EN</button>
         </div>
-        <button id="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Process</button>
-        <div id="result" class="mt-4 p-4 bg-gray-50 rounded-md h-40 overflow-y-auto"></div>
+        <h1 id="title" class="text-3xl font-bold mb-6 text-center text-gray-800">AI Date of Birth Processor</h1>
+        <div class="mb-6 relative">
+            <label id="dob-label" for="dob" class="block text-sm font-medium text-gray-700 mb-2">Enter Date of Birth</label>
+            <input type="date" id="dob" class="mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10" placeholder="YYYY-MM-DD" autocomplete="bday" max="" />
+        </div>
+        <button id="submit" class="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition-colors font-medium">Process</button>
+        
+        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md min-h-40 max-h-96 overflow-y-auto border">
+            <div id="placeholder" class="text-gray-500 text-center py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p>Enter your date of birth to get AI analysis</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Language support
+        const LANGS = {
+            vi: {
+                title: 'Phân tích ngày sinh AI',
+                dobLabel: 'Nhập ngày sinh',
+                process: 'Xử lý',
+                processing: 'Đang xử lý...',
+                error: 'Lỗi kết nối máy chủ.',
+                invalid: 'Vui lòng nhập ngày sinh hợp lệ.',
+                placeholder: 'Nhập ngày sinh của bạn để nhận phân tích từ AI'
+            },
+            en: {
+                title: 'AI Date of Birth Processor',
+                dobLabel: 'Enter Date of Birth',
+                process: 'Process',
+                processing: 'Processing...',
+                error: 'Error connecting to server.',
+                invalid: 'Please enter a valid date of birth.',
+                placeholder: 'Enter your date of birth to get AI analysis'
+            }
+        };
+        
+        let currentLang = 'vi';
+        let isProcessing = false;
+        
+        const setLang = (lang) => {
+            currentLang = lang;
+            document.getElementById('title').textContent = LANGS[lang].title;
+            document.getElementById('dob-label').textContent = LANGS[lang].dobLabel;
+            document.getElementById('submit').textContent = isProcessing ? LANGS[lang].processing : LANGS[lang].process;
+            document.getElementById('lang-vi').className = lang === 'vi' ? 
+                'px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
+                'px-3 py-1 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
+            document.getElementById('lang-en').className = lang === 'en' ? 
+                'px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
+                'px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
+            
+            // Update placeholder if it's visible
+            const placeholder = document.getElementById('placeholder');
+            if (placeholder && placeholder.style.display !== 'none') {
+                placeholder.querySelector('p').textContent = LANGS[lang].placeholder;
+            }
+        };
+        
+        document.getElementById('lang-vi').onclick = () => setLang('vi');
+        document.getElementById('lang-en').onclick = () => setLang('en');
+        setLang(currentLang);
+
+        // Function to convert markdown to HTML
+        function markdownToHtml(markdown) {
+            // Configure marked options
+            marked.setOptions({
+                breaks: true,
+                gfm: true
+            });
+            
+            return marked.parse(markdown);
+        }
+
+        // Function to add emoji icons for better visual appeal
+        function enhanceContent(html) {
+            return html
+                .replace(/<strong>(Tuổi|Age):<\/strong>/g, '⏳ <strong>$1:</strong>')
+                .replace(/<strong>(Cung hoàng đạo|Zodiac Sign):<\/strong>/g, '⭐ <strong>$1:</strong>')
+                .replace(/<strong>(Nhận xét tính cách|Personality Insight):<\/strong>/g, '😊 <strong>$1:</strong>')
+                .replace(/<strong>(Ngày sinh|Date of Birth):<\/strong>/g, '📅 <strong>$1:</strong>')
+                .replace(/<strong>(Phân tích|Analysis):<\/strong>/g, '🔍 <strong>$1:</strong>')
+                .replace(/<strong>(Tính cách|Personality):<\/strong>/g, '🎭 <strong>$1:</strong>');
+        }
+
         document.getElementById('submit').addEventListener('click', () => {
             const dob = document.getElementById('dob').value;
             const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '';
-
+            const submitBtn = document.getElementById('submit');
+            const placeholder = document.getElementById('placeholder');
+            
             if (!dob) {
-                resultDiv.innerHTML = '<p class="text-red-500">Please enter a valid date of birth.</p>';
+                resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
+                    <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ${LANGS[currentLang].invalid}
+                </div>`;
                 return;
             }
 
-            // Connect to backend streaming endpoint
-            const source = new EventSource(`http://localhost:3000/process-dob/${dob}`);
+            // Always reset UI for new analysis
+            if (placeholder) placeholder.style.display = 'none';
+            resultDiv.innerHTML = '';
+            isProcessing = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = LANGS[currentLang].processing;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Add typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'flex items-center text-blue-500 mb-4';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator mr-2"></div>
+                <span>${currentLang === 'vi' ? 'AI đang phân tích...' : 'AI is analyzing...'}</span>
+            `;
+            resultDiv.appendChild(typingDiv);
+
+            let dataReceived = false;
+            let accumulatedText = '';
+            let contentContainer = null;
+            
+            const source = new EventSource(`http://localhost:3000/process-dob/${dob}?lang=${currentLang}`);
             
             source.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.error) {
-                    resultDiv.innerHTML += `<p class="text-red-500">${data.error}</p>`;
-                    source.close();
-                } else {
-                    resultDiv.innerHTML += `<p>${data.message}</p>`;
-                    resultDiv.scrollTop = resultDiv.scrollHeight; // Auto-scroll to bottom
+                dataReceived = true;
+                
+                try {
+                    // Try to parse as JSON first
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.error) {
+                        // Handle error
+                        resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
+                            <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            ${data.error}
+                        </div>`;
+                        return;
+                    }
+                    
+                    if (data.end) {
+                        // Stream ended
+                        source.close();
+                        // Reset button state
+                        isProcessing = false;
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = LANGS[currentLang].process;
+                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        // Clear date input and focus for next analysis
+                        document.getElementById('dob').value = '';
+                        document.getElementById('dob').focus();
+                        return;
+                    }
+                    
+                    if (data.text) {
+                        // Remove typing indicator on first real data
+                        if (typingDiv.parentNode) {
+                            typingDiv.remove();
+                        }
+                        
+                        // Create content container if it doesn't exist
+                        if (!contentContainer) {
+                            contentContainer = document.createElement('div');
+                            contentContainer.className = 'markdown-content space-y-2';
+                            resultDiv.appendChild(contentContainer);
+                        }
+                        
+                        // Accumulate text
+                        accumulatedText += data.text;
+                        
+                        // Convert markdown to HTML and enhance
+                        let htmlContent = markdownToHtml(accumulatedText);
+                        htmlContent = enhanceContent(htmlContent);
+                        
+                        // Clean up any remaining markdown syntax that wasn't converted
+                        htmlContent = htmlContent
+                            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                            .replace(/\n/g, '<br>');
+                        
+                        contentContainer.innerHTML = htmlContent;
+                        
+                        // Scroll to bottom
+                        resultDiv.scrollTop = resultDiv.scrollHeight;
+                    }
+                    
+                } catch (e) {
+                    // If not JSON, treat as plain text (fallback)
+                    if (typingDiv.parentNode) {
+                        typingDiv.remove();
+                    }
+                    
+                    if (!contentContainer) {
+                        contentContainer = document.createElement('div');
+                        contentContainer.className = 'markdown-content space-y-2';
+                        resultDiv.appendChild(contentContainer);
+                    }
+                    
+                    accumulatedText += event.data;
+                    
+                    // Convert markdown to HTML and enhance
+                    let htmlContent = markdownToHtml(accumulatedText);
+                    htmlContent = enhanceContent(htmlContent);
+                    
+                    // Clean up any remaining markdown syntax that wasn't converted
+                    htmlContent = htmlContent
+                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                        .replace(/\n/g, '<br>');
+                    
+                    contentContainer.innerHTML = htmlContent;
+                    resultDiv.scrollTop = resultDiv.scrollHeight;
                 }
             };
 
             source.onerror = () => {
-                resultDiv.innerHTML += `<p class="text-red-500">Error connecting to server.</p>`;
+                if (!dataReceived) {
+                    resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
+                        <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${LANGS[currentLang].error}
+                    </div>`;
+                }
                 source.close();
+                
+                // Reset button state
+                isProcessing = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = LANGS[currentLang].process;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             };
+
+            // Handle stream completion
+            source.addEventListener('close', () => {
+                isProcessing = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = LANGS[currentLang].process;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
         });
+
+        // Set max date for dob input to today (GMT+7)
+        function getTodayGmt7() {
+            const now = new Date();
+            const gmt7Offset = 7 * 60 * 60 * 1000;
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const gmt7 = new Date(utc + gmt7Offset);
+            return gmt7.toISOString().slice(0, 10);
+        }
+        document.getElementById('dob').max = getTodayGmt7();
     </script>
 </body>
 </html>

@@ -4,16 +4,16 @@ const { OpenAI } = require('openai');
 const app = express();
 const port = 3000;
 
-// Cấu hình xAI API
+// Configure OpenAI API
 const client = new OpenAI({
-    apiKey: process.env.XAI_API_KEY,
-    baseURL: 'https://api.x.ai/v1',
+    apiKey: process.env.OPENAI_API_KEY, // Store API key in environment variable
+    baseURL: 'https://api.openai.com/v1',
 });
 
 app.use(cors());
 app.use(express.json());
 
-// Endpoint xử lý ngày sinh với xAI API streaming
+// Endpoint to process date of birth with OpenAI API streaming
 app.get('/process-dob/:dob', async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -28,7 +28,7 @@ app.get('/process-dob/:dob', async (req, res) => {
 
     try {
         const stream = await client.chat.completions.create({
-            model: 'grok-beta',
+            model: 'gpt-4o-mini', // Use a streaming-compatible model
             messages: [
                 {
                     role: 'system',
@@ -51,8 +51,8 @@ app.get('/process-dob/:dob', async (req, res) => {
         res.end();
     } catch (error) {
         let errorMessage = error.message;
-        if (error.response?.status === 403) {
-            errorMessage = 'API access denied: Insufficient credits. Please purchase credits at https://console.x.ai/team/bde4d974-9d7d-468e-b26c-4bfda2885129';
+        if (error.response?.status === 403 || error.code === 'insufficient_quota') {
+            errorMessage = 'API access denied: Insufficient quota. Please check your OpenAI account at https://platform.openai.com/account/billing';
         }
         res.write(`data: ${JSON.stringify({ error: errorMessage })}\n\n`);
         res.end();
