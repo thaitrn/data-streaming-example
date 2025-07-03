@@ -1,12 +1,19 @@
 const express = require('express');
 const cors = require('cors');
+const { OpenAI } = require('openai');
 const app = express();
 const port = 3000;
+
+// Cấu hình xAI API
+const client = new OpenAI({
+    apiKey: process.env.XAI_API_KEY,
+    baseURL: 'https://api.x.ai/v1',
+});
 
 app.use(cors());
 app.use(express.json());
 
-// Simulate AI processing with streaming
+// Endpoint xử lý ngày sinh với xAI API streaming
 app.get('/process-dob/:dob', async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -19,52 +26,43 @@ app.get('/process-dob/:dob', async (req, res) => {
         return;
     }
 
-    const birthDate = new Date(dob);
-    console.log(birthDate);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const zodiac = getZodiacSign(birthDate);
+    try {
+        const stream = await client.chat.completions.create({
+            model: 'grok-beta',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are an AI that analyzes dates of birth. Given a date of birth, calculate the age, determine the zodiac sign, and provide a brief personality insight based on the zodiac sign. Respond in short, streamable chunks.'
+                },
+                {
+                    role: 'user',
+                    content: `Analyze this date of birth: ${dob}`
+                }
+            ],
+            stream: true,
+        });
 
-    // Simulate streaming chunks
-    const chunks = [
-        `Processing date of birth: ${dob}...`,
-        `Calculated age: ${age} years old.`,
-        `Determining zodiac sign...`,
-        `Your zodiac sign is: ${zodiac}.`,
-        `Analysis complete!`
-    ];
-
-    for (const chunk of chunks) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate AI processing delay
-        console.log(chunk);
-        res.write(`data: ${JSON.stringify({ message: chunk })}\n\n`);
+        for await (const chunk of stream) {
+            const message = chunk.choices[0]?.delta?.content || '';
+            if (message) {
+                res.write(`data: ${JSON.stringify({ message })}\n\n`);
+            }
+        }
+        res.end();
+    } catch (error) {
+        let errorMessage = error.message;
+        if (error.response?.status === 403) {
+            errorMessage = 'API access denied: Insufficient credits. Please purchase credits at https://console.x.ai/team/bde4d974-9d7d-468e-b26c-4bfda2885129';
+        }
+        res.write(`data: ${JSON.stringify({ error: errorMessage })}\n\n`);
+        res.end();
     }
-
-    res.end();
 });
 
 // Validate date format
 function isValidDate(dateString) {
     const date = new Date(dateString);
     return date instanceof Date && !isNaN(date);
-}
-
-// Calculate zodiac sign
-function getZodiacSign(date) {
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Aries";
-    if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "Taurus";
-    if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return "Gemini";
-    if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return "Cancer";
-    if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "Leo";
-    if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "Virgo";
-    if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return "Libra";
-    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return "Scorpio";
-    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "Sagittarius";
-    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "Capricorn";
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Aquarius";
-    return "Pisces";
 }
 
 app.listen(port, () => {
