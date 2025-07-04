@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
     const timestamp = new Date().toISOString();
     const dob = req.query.dob;
     const lang = req.query.lang === 'en' ? 'en' : 'vi';
-    console.log(`[${timestamp}] Received request for /api/process-dob | dob: ${dob} | lang: ${lang}`);
+    console.log(`[${timestamp}] [START] /api/process-dob | dob: ${dob} | lang: ${lang}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'text/event-stream');
@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
 
     if (!dob || !isValidDate(dob)) {
-        console.log(`[${timestamp}] Invalid date format received: ${dob}`);
+        console.log(`[${timestamp}] [VALIDATE] Invalid date format received: ${dob}`);
         res.write('data: {"error": "Invalid date format"}\n\n');
         res.end();
         return;
@@ -33,10 +33,10 @@ module.exports = async (req, res) => {
         vi: `Bạn là AI phân tích ngày sinh. Cho một ngày sinh, hãy tính tuổi (tính đến ngày hôm nay: ${todayGmt7} GMT+7), xác định cung hoàng đạo và đưa ra nhận xét ngắn gọn về tính cách dựa trên cung hoàng đạo. Trả lời ngắn gọn, từng phần nhỏ, dễ stream. Phân tích ngày sinh này: ${dob}`,
         en: `You are an AI that analyzes dates of birth. Given a date of birth, calculate the age (as of today: ${todayGmt7} GMT+7), determine the zodiac sign, and provide a brief personality insight based on the zodiac sign. Respond in short, streamable chunks. Analyze this date of birth: ${dob}`
     };
-    console.log(`[${timestamp}] Prompt sent to Gemini: ${prompts[lang]}`);
+    console.log(`[${timestamp}] [PROMPT] Sent to Gemini: ${prompts[lang]}`);
 
     try {
-        console.log(`[${timestamp}] Sending request to Gemini API...`);
+        console.log(`[${timestamp}] [GEMINI] Sending request to Gemini API...`);
         const response = await axios({
             method: 'post',
             url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -107,14 +107,14 @@ module.exports = async (req, res) => {
                                     })
                                     .trim();
                                 if (cleanMessage) {
-                                    console.log(`[${timestamp}] Processed message: ${cleanMessage}`);
+                                    console.log(`[${timestamp}] [STREAM] Processed message: ${cleanMessage}`);
                                     res.write(`data: ${JSON.stringify({ text: cleanMessage })}\n\n`);
                                 }
                             }
                             processed = true;
                         } catch (e) {
-                            console.log(`[${timestamp}] JSON parse error:`, e.message);
-                            console.log(`[${timestamp}] Problematic JSON:`, jsonStr);
+                            console.log(`[${timestamp}] [STREAM] JSON parse error:`, e.message);
+                            console.log(`[${timestamp}] [STREAM] Problematic JSON:`, jsonStr);
                             buffer = buffer.substring(1);
                             processed = true;
                         }
@@ -129,16 +129,17 @@ module.exports = async (req, res) => {
             }
         }
         response.data.on('end', () => {
-            console.log(`[${timestamp}] Gemini API stream ended`);
+            console.log(`[${timestamp}] [GEMINI] API stream ended`);
             if (buffer.trim()) {
-                console.log(`[${timestamp}] Remaining buffer:`, buffer);
+                console.log(`[${timestamp}] [GEMINI] Remaining buffer:`, buffer);
                 processBuffer();
             }
             res.write('data: {"end": true}\n\n');
             res.end();
+            console.log(`[${timestamp}] [END] Response sent to client.`);
         });
         response.data.on('error', (error) => {
-            console.error(`[${timestamp}] Gemini API stream error:`, error);
+            console.error(`[${timestamp}] [GEMINI] API stream error:`, error);
             res.write(`data: ${JSON.stringify({ error: 'Stream error occurred' })}\n\n`);
             res.end();
         });
@@ -149,7 +150,7 @@ module.exports = async (req, res) => {
         } else if (error.response?.status === 429) {
             errorMessage = 'API quota exceeded. Check your usage limits at https://aistudio.google.com/app/apikey or enable billing for higher limits.';
         }
-        console.error(`[${timestamp}] Gemini API error:`, error.stack || error);
+        console.error(`[${timestamp}] [ERROR] Gemini API error:`, error.stack || error);
         res.write(`data: ${JSON.stringify({ error: errorMessage })}\n\n`);
         res.end();
     }

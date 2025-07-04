@@ -4,89 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Streaming DOB App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <style>
-        /* Custom styles for markdown content */
-        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-        .markdown-content h1 { font-size: 1.25rem; }
-        .markdown-content h2 { font-size: 1.125rem; }
-        .markdown-content h3 { font-size: 1rem; }
-        .markdown-content p { margin: 0.25rem 0; }
-        .markdown-content strong { font-weight: 600; }
-        .markdown-content em { font-style: italic; }
-        .markdown-content ul, .markdown-content ol { 
-            margin: 0.5rem 0; 
-            padding-left: 1.5rem; 
-        }
-        .markdown-content li { margin: 0.25rem 0; }
-        .markdown-content blockquote {
-            border-left: 4px solid #e5e7eb;
-            padding-left: 1rem;
-            margin: 0.5rem 0;
-            font-style: italic;
-            color: #6b7280;
-        }
-        .typing-indicator {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #3b82f6;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .chunk-container {
-            opacity: 0;
-            animation: fadeIn 0.3s ease-in-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* New: background gradient */
-        body {
+        html, body {
+            font-family: 'Poppins', Arial, sans-serif;
             background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+            min-height: 100vh;
         }
-        /* New: fade-in for result */
-        #result.fade-in {
-            animation: fadeIn 0.7s ease-in-out;
+        h1, h2, h3 {
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
-        /* New: calendar icon for input */
-        .input-icon {
-            position: relative;
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.25rem; }
+        .markdown-content p, .markdown-content li {
+            font-size: 1.08rem;
+            line-height: 1.7;
         }
-        .input-icon input {
-            padding-left: 2.5rem;
+        .max-w-4xl {
+            background: rgba(255,255,255,0.7);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
         }
-        .input-icon .calendar {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            pointer-events: none;
+        .rounded-xl, .rounded-2xl {
+            border-radius: 1.25rem !important;
         }
-        /* New: validation feedback */
-        .input-error {
-            color: #ef4444;
-            font-size: 0.95rem;
-            margin-top: 0.25rem;
+        .shadow-xl, .shadow {
+            box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10) !important;
         }
-        /* New: try another button */
-        #try-another {
-            margin-top: 1.5rem;
-            display: none;
+        .card {
+            transition: box-shadow 0.3s, transform 0.3s;
+            border: 1.5px solid #e5e7eb;
+            background: #fff;
         }
+        .card:hover {
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            transform: translateY(-2px) scale(1.01);
+        }
+        .card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card .icon {
+            width: 1.3em;
+            height: 1.3em;
+            vertical-align: middle;
+        }
+        .modern-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.08);
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .modern-btn svg {
+            width: 1.2em;
+            height: 1.2em;
+        }
+        .modern-btn:hover {
+            background: #3b82f6;
+            color: #fff;
+            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.15);
+        }
+        #progress-bar-container {
+            margin-bottom: 1.5rem;
+        }
+        #progress-bar {
+            background: linear-gradient(90deg, #60a5fa 0%, #818cf8 100%);
+            animation: progress-stripes 1s linear infinite;
+        }
+        @keyframes progress-stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 0; }
+        }
+        /* Card reveal animation */
+        .card, .rounded-xl, .rounded-b-xl {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .card.show, .rounded-xl.show, .rounded-b-xl.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Responsive tweaks */
         @media (max-width: 640px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.3rem; }
             .max-w-4xl { padding: 0.5rem; }
             .grid-cols-1, .md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+        }
+        /* AI typing dots animation */
+        #ai-dots .dot {
+            animation: blink 1.2s infinite both;
+            font-size: 1.5em;
+        }
+        #ai-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+        #ai-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
+        }
+        /* Pulse effect for highlight button */
+        .pulse-highlight {
+            box-shadow: 0 0 0 0 rgba(34,197,94,0.7);
+            animation: pulse-green 1.5s infinite;
+            border: 2.5px solid #22c55e;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(34,197,94,0.0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
         }
     </style>
 </head>
@@ -96,7 +131,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
             <div class="mb-6 input-icon">
                 <label for="dob" id="dob-label" class="block text-gray-700 font-semibold mb-2 text-lg">Enter Your Birth Date:</label>
-                <input type="date" id="dob" class="w-full p-2 border rounded pl-10 text-lg" required>
+                <input type="date" id="dob" class="w-full p-2 border rounded pl-10 text-lg" required pattern="\\d{4}-\\d{2}-\\d{2}" inputmode="none" onkeydown="return false;">
                 <div id="dob-error" class="input-error" style="display:none;"></div>
             </div>
             <button id="submit" class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 text-lg font-semibold transition">Get My Insights</button>
@@ -108,13 +143,16 @@
         <div id="result" class="bg-white rounded-2xl shadow-xl p-8 mb-10 hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Your Personal Insights</h2>
-                <div class="typing-indicator"></div>
+                <div id="ai-status" class="flex items-center gap-2 text-blue-500 text-lg font-semibold">
+                    <span id="ai-status-text">AI đang phân tích...</span>
+                    <span id="ai-dots" class="inline-block"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+                </div>
             </div>
             <div id="insight-hint" class="text-center text-gray-600 mb-6">Bạn có muốn xem thêm về Your Personality Traits, Life Cycle Analysis, Interesting Facts?</div>
             <div id="card-buttons" class="flex flex-col md:flex-row gap-4 justify-center mb-6 hidden">
-                <button id="btn-personality" class="bg-teal-100 text-teal-700 font-semibold py-2 px-4 rounded-lg hover:bg-teal-200 transition" onclick="manualOpenCard('personality-traits-card')">Xem Personality Traits</button>
-                <button id="btn-life-cycle" class="bg-yellow-100 text-yellow-700 font-semibold py-2 px-4 rounded-lg hover:bg-yellow-200 transition" onclick="manualOpenCard('life-cycle-card')">Xem Life Cycle Analysis</button>
-                <button id="btn-interesting" class="bg-pink-100 text-pink-700 font-semibold py-2 px-4 rounded-lg hover:bg-pink-200 transition" onclick="manualOpenCard('interesting-facts-card')">Xem Interesting Facts</button>
+                <button id="btn-personality" class="modern-btn bg-teal-100 text-teal-700 font-semibold py-2 px-4" onclick="manualOpenCard('personality-traits-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Xem Personality Traits</button>
+                <button id="btn-life-cycle" class="modern-btn bg-yellow-100 text-yellow-700 font-semibold py-2 px-4" onclick="manualOpenCard('life-cycle-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg> Xem Life Cycle Analysis</button>
+                <button id="btn-interesting" class="modern-btn bg-pink-100 text-pink-700 font-semibold py-2 px-4" onclick="manualOpenCard('interesting-facts-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Xem Interesting Facts</button>
             </div>
             <div id="progress-bar-container" class="w-full flex justify-center mb-6 hidden">
                 <div class="w-2/3 bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -124,33 +162,38 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Basic Info (always visible after submit) -->
                 <div>
-                    <div id="basic-info-card" class="bg-indigo-50 p-6 rounded-xl shadow">
-                        <h3 class="text-lg font-bold mb-2 text-indigo-700">Basic Information</h3>
+                    <div id="basic-info-card" class="bg-indigo-50 p-6 rounded-xl shadow card">
+                        <h3 class="text-lg font-bold mb-2 text-indigo-700"><span class="icon">📋</span>Basic Information</h3>
                         <div class="markdown-content" id="basic-info"></div>
                     </div>
                 </div>
                 <!-- Personal Traits -->
                 <div>
-                    <button id="btn-personality" class="w-full bg-teal-100 text-teal-700 font-semibold py-2 rounded-t-xl hover:bg-teal-200 transition hidden" onclick="toggleCard('personality-traits-card')">Xem Personality Traits</button>
-                    <div id="personality-traits-card" class="bg-teal-50 p-6 rounded-b-xl shadow hidden">
-                        <h3 class="text-lg font-bold mb-2 text-teal-700">Your Personality Traits</h3>
+                    <div id="personality-traits-card" class="bg-teal-50 p-6 rounded-b-xl shadow card hidden">
+                        <h3 class="text-lg font-bold mb-2 text-teal-700"><span class="icon">🧠</span>Your Personality Traits</h3>
                         <div class="markdown-content" id="personality-traits"></div>
                     </div>
                 </div>
                 <!-- Life Cycle -->
                 <div>
-                    <button id="btn-life-cycle" class="w-full bg-yellow-100 text-yellow-700 font-semibold py-2 rounded-t-xl hover:bg-yellow-200 transition hidden" onclick="toggleCard('life-cycle-card')">Xem Life Cycle Analysis</button>
-                    <div id="life-cycle-card" class="bg-yellow-50 p-6 rounded-b-xl shadow hidden">
-                        <h3 class="text-lg font-bold mb-2 text-yellow-700">Life Cycle Analysis</h3>
+                    <div id="life-cycle-card" class="bg-yellow-50 p-6 rounded-b-xl shadow card hidden">
+                        <h3 class="text-lg font-bold mb-2 text-yellow-700"><span class="icon">🌱</span>Life Cycle Analysis</h3>
                         <div class="markdown-content" id="life-cycle"></div>
                     </div>
                 </div>
                 <!-- Interesting Facts -->
                 <div>
-                    <button id="btn-interesting" class="w-full bg-pink-100 text-pink-700 font-semibold py-2 rounded-t-xl hover:bg-pink-200 transition hidden" onclick="toggleCard('interesting-facts-card')">Xem Interesting Facts</button>
-                    <div id="interesting-facts-card" class="bg-pink-50 p-6 rounded-b-xl shadow hidden">
-                        <h3 class="text-lg font-bold mb-2 text-pink-700">Interesting Facts</h3>
+                    <div id="interesting-facts-card" class="bg-pink-50 p-6 rounded-b-xl shadow card hidden">
+                        <h3 class="text-lg font-bold mb-2 text-pink-700"><span class="icon">✨</span>Interesting Facts</h3>
                         <div class="markdown-content" id="interesting-facts"></div>
+                    </div>
+                </div>
+                <!-- Shopping Suggestions -->
+                <div>
+                    <button id="btn-shopping" class="modern-btn bg-green-100 text-green-700 font-semibold py-2 px-4 pulse-highlight" onclick="manualOpenShoppingCard()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-13z"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>Gợi ý vật phẩm phong thuỷ</button>
+                    <div id="shopping-suggestions-card" class="bg-green-50 p-6 rounded-b-xl shadow card hidden">
+                        <h3 class="text-lg font-bold mb-2 text-green-700"><span class="icon">🛍️</span>Gợi ý vật phẩm phong thuỷ</h3>
+                        <div class="markdown-content" id="shopping-suggestions"></div>
                     </div>
                 </div>
             </div>
@@ -237,12 +280,49 @@
         function manualOpenCard(cardId) {
             autoOpenStopped = true;
             clearAutoOpenTimeouts();
+            document.getElementById('ai-status').style.display = 'none';
             const card = document.getElementById(cardId);
             card.classList.remove('hidden');
+            setTimeout(() => card.classList.add('show'), 10);
         }
         function clearAutoOpenTimeouts() {
             autoOpenTimeouts.forEach(t => clearTimeout(t));
             autoOpenTimeouts = [];
+        }
+
+        // Gợi ý vật phẩm phong thuỷ chỉ render khi user click
+        function manualOpenShoppingCard() {
+            autoOpenStopped = true;
+            clearAutoOpenTimeouts();
+            const card = document.getElementById('shopping-suggestions-card');
+            card.classList.remove('hidden');
+            setTimeout(() => card.classList.add('show'), 10);
+            // Sinh nội dung khi click
+            const zodiac = window.lastZodiac;
+            const age = window.lastAge;
+            const shoppingSuggestionsMap = {
+                'Aries': ['Đá ruby', 'Vật phẩm màu đỏ', 'Đồng hồ thể thao'],
+                'Taurus': ['Đá thạch anh hồng', 'Cây xanh nhỏ', 'Đồ trang trí gốm'],
+                'Gemini': ['Sách', 'Bút ký', 'Phụ kiện đa năng'],
+                'Cancer': ['Đá mặt trăng', 'Khung ảnh gia đình', 'Nến thơm'],
+                'Leo': ['Đá mắt hổ', 'Trang sức vàng', 'Đồ decor sang trọng'],
+                'Virgo': ['Đá ngọc lục bảo', 'Sổ tay', 'Cây để bàn'],
+                'Libra': ['Đá thạch anh tím', 'Nước hoa', 'Tranh nghệ thuật'],
+                'Scorpio': ['Đá obsidian', 'Vòng tay phong thuỷ', 'Nước hoa bí ẩn'],
+                'Sagittarius': ['Đá ngọc lam', 'Balo du lịch', 'Sách khám phá'],
+                'Capricorn': ['Đá mã não', 'Đồng hồ', 'Vật phẩm màu nâu/xám'],
+                'Aquarius': ['Đá sapphire', 'Đồ công nghệ', 'Phụ kiện độc lạ'],
+                'Pisces': ['Đá aquamarine', 'Đèn ngủ', 'Đồ decor biển']
+            };
+            const shoppingList = shoppingSuggestionsMap[zodiac] || ['Vật phẩm phong thuỷ hợp mệnh', 'Đồ trang trí mang lại may mắn'];
+            let shoppingText = `**Gợi ý cho ${zodiac}:**\n`;
+            shoppingList.forEach(item => { shoppingText += `- ${item}\n`; });
+            if (age && age.years < 13) shoppingText += '- Đồ chơi giáo dục, sách tranh, vật phẩm an toàn cho trẻ nhỏ\n';
+            else if (age && age.years < 20) shoppingText += '- Sách phát triển bản thân, phụ kiện cá tính, đồ thể thao\n';
+            else if (age && age.years < 40) shoppingText += '- Đồ decor văn phòng, đồng hồ, vật phẩm phong thuỷ cho sự nghiệp\n';
+            else if (age && age.years < 60) shoppingText += '- Đồ chăm sóc sức khoẻ, cây cảnh, vật phẩm thư giãn\n';
+            else if (age) shoppingText += '- Đồ dưỡng sinh, vật phẩm an lạc, sách truyền cảm hứng\n';
+            document.getElementById('shopping-suggestions').innerHTML = enhanceContent(markdownToHtml(shoppingText));
         }
 
         // Add new functions for enhanced analysis
@@ -286,6 +366,13 @@
                 return;
             }
 
+            // Kiểm tra định dạng yyyy-mm-dd
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+                dobError.textContent = 'Vui lòng chọn ngày sinh hợp lệ (yyyy-mm-dd)';
+                dobError.style.display = 'block';
+                return;
+            }
+
             console.log('[Step 1] User submitted DOB:', dob);
             submitBtn.disabled = true;
             spinner.style.display = 'flex';
@@ -294,17 +381,28 @@
                 resultDiv.classList.remove('hidden');
                 // Hiện card Basic Info ngay lập tức
                 document.getElementById('basic-info-card').classList.remove('hidden');
+                setTimeout(() => document.getElementById('basic-info-card').classList.add('show'), 10);
                 // Ẩn spinner ngay khi đã có kết quả cơ bản
                 spinner.style.display = 'none';
+                // Chuyển hiệu ứng sang "AI đang đưa ra nhận xét..." trong 2s rồi ẩn
+                const aiStatus = document.getElementById('ai-status');
+                const aiStatusText = document.getElementById('ai-status-text');
+                const aiDots = document.getElementById('ai-dots');
+                aiStatusText.textContent = 'AI đang đưa ra nhận xét...';
+                aiDots.style.display = 'none';
+                setTimeout(() => { aiStatus.style.display = 'none'; }, 2000);
                 // Hiện thông báo và các nút chọn card
                 document.getElementById('card-buttons').classList.remove('hidden');
                 // Tự động mở từng card nếu user không chọn gì
                 autoOpenTimeouts.push(setTimeout(() => {
                     if (!autoOpenStopped) document.getElementById('personality-traits-card').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('personality-traits-card').classList.add('show'), 10);
                     autoOpenTimeouts.push(setTimeout(() => {
                         if (!autoOpenStopped) document.getElementById('life-cycle-card').classList.remove('hidden');
+                        setTimeout(() => document.getElementById('life-cycle-card').classList.add('show'), 10);
                         autoOpenTimeouts.push(setTimeout(() => {
                             if (!autoOpenStopped) document.getElementById('interesting-facts-card').classList.remove('hidden');
+                            setTimeout(() => document.getElementById('interesting-facts-card').classList.add('show'), 10);
                         }, 3000));
                     }, 3000));
                 }, 3000));
@@ -324,31 +422,60 @@
                 const lifeStage = getLifeStage(age.years);
                 console.log('[Step 4] Life stage:', lifeStage);
 
+                // Tính toán numerology trước khi dùng
+                const numerologyNum = getNumerology(dob);
+                const numerologyFact = getNumerologyFact(numerologyNum);
+
                 // Format the results
                 const basicInfo = `**Your Age:** ${age.years} years, ${age.months} months, and ${age.days} days\n` +
                                  `**Zodiac Sign:** ${zodiac}\n` +
                                  `**Life Stage:** ${lifeStage}`;
 
-                // These would be populated by the backend
-                const personalityTraits = `- ${zodiac} characteristics\n- Numerology insights\n- Life path number analysis`;
+                // Hoàn thiện nội dung Personality Traits
+                const zodiacTraits = {
+                    'Aries': 'Năng động, nhiệt huyết, thích thử thách, đôi khi nóng nảy.',
+                    'Taurus': 'Kiên định, thực tế, yêu cái đẹp, đôi khi bướng bỉnh.',
+                    'Gemini': 'Linh hoạt, giao tiếp tốt, tò mò, đôi khi thiếu kiên nhẫn.',
+                    'Cancer': 'Tình cảm, quan tâm, nhạy cảm, đôi khi dễ bị tổn thương.',
+                    'Leo': 'Tự tin, sáng tạo, hào phóng, đôi khi kiêu ngạo.',
+                    'Virgo': 'Tỉ mỉ, chăm chỉ, phân tích tốt, đôi khi cầu toàn.',
+                    'Libra': 'Công bằng, duyên dáng, yêu hòa bình, đôi khi do dự.',
+                    'Scorpio': 'Sâu sắc, quyết đoán, bí ẩn, đôi khi ghen tuông.',
+                    'Sagittarius': 'Lạc quan, thích tự do, ham học hỏi, đôi khi thiếu kiên nhẫn.',
+                    'Capricorn': 'Kỷ luật, trách nhiệm, tham vọng, đôi khi cứng nhắc.',
+                    'Aquarius': 'Sáng tạo, độc lập, nhân văn, đôi khi lập dị.',
+                    'Pisces': 'Nhạy cảm, giàu trí tưởng tượng, vị tha, đôi khi mơ mộng.'
+                };
+                const trait = zodiacTraits[zodiac] || '';
+                const personalityTraits =
+                    `**Zodiac:** ${zodiac}\n` +
+                    `**Key Traits:** ${trait}\n` +
+                    `**Numerology:** Số chủ đạo của bạn là ${numerologyNum} – ${numerologyFact}`;
 
-                const lifeCycle = `- Major life milestones\n- Career potential\n- Relationship compatibility`;
+                // Hoàn thiện nội dung Life Cycle Analysis
+                function getLifeMilestones(age) {
+                    if (age < 13) return ['Khám phá bản thân', 'Học hỏi kỹ năng cơ bản', 'Tạo dựng nền tảng gia đình'];
+                    if (age < 20) return ['Phát triển cá tính', 'Tìm kiếm đam mê', 'Kết bạn và xây dựng các mối quan hệ'];
+                    if (age < 40) return ['Xây dựng sự nghiệp', 'Tìm kiếm sự ổn định', 'Phát triển bản thân'];
+                    if (age < 60) return ['Ổn định tài chính', 'Chia sẻ kinh nghiệm', 'Chăm sóc sức khỏe'];
+                    return ['Tận hưởng cuộc sống', 'Gắn kết gia đình', 'Truyền cảm hứng cho thế hệ sau'];
+                }
+                const milestones = getLifeMilestones(age.years);
+                const lifeCycle =
+                    `**Current Stage:** ${lifeStage}\n` +
+                    `**Major Milestones:**\n- ${milestones.join('\n- ')}`;
 
                 console.log('[Step 5] Generating interesting facts...');
                 const daysOld = Math.floor((new Date() - new Date(dob)) / (1000 * 60 * 60 * 24));
                 const famous = getFamousBirthdays(dob);
                 const event = getHistoricalEvent(dob, 10);
-                const numerologyNum = getNumerology(dob);
-                const numerologyFact = getNumerologyFact(numerologyNum);
                 console.log('[Step 5] Days old:', daysOld);
                 console.log('[Step 5] Famous birthdays:', famous);
                 console.log('[Step 5] 10th birthday event:', event);
-                console.log('[Step 5] Numerology:', numerologyNum, numerologyFact);
 
                 const interestingFacts = `You are approximately **${daysOld} days old**.\n` +
                     `Famous people born on your date: ${famous}\n` +
-                    `On your 10th birthday, this happened: ${event}\n` +
-                    `Your birth date numerology number is ${numerologyNum}: ${numerologyFact}`;
+                    `On your 10th birthday, this happened: ${event}`;
 
                 // Update the display
                 document.getElementById('basic-info').innerHTML = enhanceContent(markdownToHtml(basicInfo));
@@ -356,6 +483,20 @@
                 document.getElementById('life-cycle').innerHTML = enhanceContent(markdownToHtml(lifeCycle));
                 document.getElementById('interesting-facts').innerHTML = enhanceContent(markdownToHtml(interestingFacts));
                 console.log('[Step 6] Display updated.');
+
+                // Gợi ý vật phẩm phong thuỷ
+                document.getElementById('shopping-suggestions-card').classList.add('hidden');
+                document.getElementById('btn-shopping').classList.add('hidden');
+                document.getElementById('shopping-suggestions').innerHTML = '';
+                document.getElementById('btn-shopping').classList.add('pulse-highlight');
+                setTimeout(() => {
+                    document.getElementById('btn-shopping').classList.remove('hidden');
+                    document.getElementById('btn-shopping').classList.add('pulse-highlight');
+                }, 9000);
+
+                // Lưu lại zodiac và age để dùng khi click
+                window.lastZodiac = zodiac;
+                window.lastAge = age;
 
             } catch (error) {
                 console.error('[Error] Processing DOB:', error);
@@ -492,10 +633,10 @@
             const card = document.getElementById(cardId);
             if (card.classList.contains('hidden')) {
                 card.classList.remove('hidden');
-                card.style.maxHeight = card.scrollHeight + 'px';
+                setTimeout(() => card.classList.add('show'), 10);
             } else {
-                card.classList.add('hidden');
-                card.style.maxHeight = null;
+                card.classList.remove('show');
+                setTimeout(() => card.classList.add('hidden'), 300);
             }
         }
 
@@ -525,6 +666,10 @@
             document.getElementById('card-buttons').classList.add('hidden');
             autoOpenStopped = false;
             clearAutoOpenTimeouts();
+            document.getElementById('shopping-suggestions-card').classList.add('hidden');
+            document.getElementById('btn-shopping').classList.add('hidden');
+            document.getElementById('shopping-suggestions').innerHTML = '';
+            document.getElementById('btn-shopping').classList.add('pulse-highlight');
         };
     </script>
 </body>
