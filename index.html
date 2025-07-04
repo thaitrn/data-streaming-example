@@ -50,28 +50,111 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* New: background gradient */
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+        }
+        /* New: fade-in for result */
+        #result.fade-in {
+            animation: fadeIn 0.7s ease-in-out;
+        }
+        /* New: calendar icon for input */
+        .input-icon {
+            position: relative;
+        }
+        .input-icon input {
+            padding-left: 2.5rem;
+        }
+        .input-icon .calendar {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+        }
+        /* New: validation feedback */
+        .input-error {
+            color: #ef4444;
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+        /* New: try another button */
+        #try-another {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        @media (max-width: 640px) {
+            .max-w-4xl { padding: 0.5rem; }
+            .grid-cols-1, .md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen py-4">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-        <div class="flex justify-end mb-2">
-            <button id="lang-vi" class="px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">VI</button>
-            <button id="lang-en" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">EN</button>
-        </div>
-        <h1 id="title" class="text-3xl font-bold mb-6 text-center text-gray-800">AI Date of Birth Processor</h1>
-        <div class="mb-6 relative">
-            <label id="dob-label" for="dob" class="block text-sm font-medium text-gray-700 mb-2">Enter Date of Birth</label>
-            <input type="date" id="dob" class="mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10" placeholder="YYYY-MM-DD" autocomplete="bday" max="" />
-        </div>
-        <button id="submit" class="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition-colors font-medium">Process</button>
-        
-        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md min-h-40 max-h-96 overflow-y-auto border">
-            <div id="placeholder" class="text-gray-500 text-center py-8">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p>Enter your date of birth to get AI analysis</p>
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 id="title" class="text-4xl font-extrabold mb-6 text-center tracking-tight">AI DOB Insights</h1>
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
+            <div class="mb-6 input-icon">
+                <label for="dob" id="dob-label" class="block text-gray-700 font-semibold mb-2 text-lg">Enter Your Birth Date:</label>
+                <input type="date" id="dob" class="w-full p-2 border rounded pl-10 text-lg" required>
+                <div id="dob-error" class="input-error" style="display:none;"></div>
             </div>
+            <button id="submit" class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 text-lg font-semibold transition">Get My Insights</button>
+            <div id="spinner" style="display:none;" class="flex justify-center mt-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-t-4 border-b-4 border-blue-500"></div>
+            </div>
+        </div>
+
+        <div id="result" class="bg-white rounded-2xl shadow-xl p-8 mb-10 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Your Personal Insights</h2>
+                <div class="typing-indicator"></div>
+            </div>
+            <div id="insight-hint" class="text-center text-gray-600 mb-6">Bạn có muốn xem thêm về Your Personality Traits, Life Cycle Analysis, Interesting Facts?</div>
+            <div id="card-buttons" class="flex flex-col md:flex-row gap-4 justify-center mb-6 hidden">
+                <button id="btn-personality" class="bg-teal-100 text-teal-700 font-semibold py-2 px-4 rounded-lg hover:bg-teal-200 transition" onclick="manualOpenCard('personality-traits-card')">Xem Personality Traits</button>
+                <button id="btn-life-cycle" class="bg-yellow-100 text-yellow-700 font-semibold py-2 px-4 rounded-lg hover:bg-yellow-200 transition" onclick="manualOpenCard('life-cycle-card')">Xem Life Cycle Analysis</button>
+                <button id="btn-interesting" class="bg-pink-100 text-pink-700 font-semibold py-2 px-4 rounded-lg hover:bg-pink-200 transition" onclick="manualOpenCard('interesting-facts-card')">Xem Interesting Facts</button>
+            </div>
+            <div id="progress-bar-container" class="w-full flex justify-center mb-6 hidden">
+                <div class="w-2/3 bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-blue-400 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Basic Info (always visible after submit) -->
+                <div>
+                    <div id="basic-info-card" class="bg-indigo-50 p-6 rounded-xl shadow">
+                        <h3 class="text-lg font-bold mb-2 text-indigo-700">Basic Information</h3>
+                        <div class="markdown-content" id="basic-info"></div>
+                    </div>
+                </div>
+                <!-- Personal Traits -->
+                <div>
+                    <button id="btn-personality" class="w-full bg-teal-100 text-teal-700 font-semibold py-2 rounded-t-xl hover:bg-teal-200 transition hidden" onclick="toggleCard('personality-traits-card')">Xem Personality Traits</button>
+                    <div id="personality-traits-card" class="bg-teal-50 p-6 rounded-b-xl shadow hidden">
+                        <h3 class="text-lg font-bold mb-2 text-teal-700">Your Personality Traits</h3>
+                        <div class="markdown-content" id="personality-traits"></div>
+                    </div>
+                </div>
+                <!-- Life Cycle -->
+                <div>
+                    <button id="btn-life-cycle" class="w-full bg-yellow-100 text-yellow-700 font-semibold py-2 rounded-t-xl hover:bg-yellow-200 transition hidden" onclick="toggleCard('life-cycle-card')">Xem Life Cycle Analysis</button>
+                    <div id="life-cycle-card" class="bg-yellow-50 p-6 rounded-b-xl shadow hidden">
+                        <h3 class="text-lg font-bold mb-2 text-yellow-700">Life Cycle Analysis</h3>
+                        <div class="markdown-content" id="life-cycle"></div>
+                    </div>
+                </div>
+                <!-- Interesting Facts -->
+                <div>
+                    <button id="btn-interesting" class="w-full bg-pink-100 text-pink-700 font-semibold py-2 rounded-t-xl hover:bg-pink-200 transition hidden" onclick="toggleCard('interesting-facts-card')">Xem Interesting Facts</button>
+                    <div id="interesting-facts-card" class="bg-pink-50 p-6 rounded-b-xl shadow hidden">
+                        <h3 class="text-lg font-bold mb-2 text-pink-700">Interesting Facts</h3>
+                        <div class="markdown-content" id="interesting-facts"></div>
+                    </div>
+                </div>
+            </div>
+            <button id="try-another" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold transition">Try Another Date</button>
         </div>
     </div>
 
@@ -106,12 +189,12 @@
             document.getElementById('title').textContent = LANGS[lang].title;
             document.getElementById('dob-label').textContent = LANGS[lang].dobLabel;
             document.getElementById('submit').textContent = isProcessing ? LANGS[lang].processing : LANGS[lang].process;
-            document.getElementById('lang-vi').className = lang === 'vi' ? 
-                'px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
-                'px-3 py-1 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
-            document.getElementById('lang-en').className = lang === 'en' ? 
-                'px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
-                'px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
+            // document.getElementById('lang-vi').className = lang === 'vi' ? 
+            //     'px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
+            //     'px-3 py-1 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
+            // document.getElementById('lang-en').className = lang === 'en' ? 
+            //     'px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
+            //     'px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
             
             // Update placeholder if it's visible
             const placeholder = document.getElementById('placeholder');
@@ -120,8 +203,8 @@
             }
         };
         
-        document.getElementById('lang-vi').onclick = () => setLang('vi');
-        document.getElementById('lang-en').onclick = () => setLang('en');
+        // document.getElementById('lang-vi').onclick = () => setLang('vi');
+        // document.getElementById('lang-en').onclick = () => setLang('en');
         setLang(currentLang);
 
         // Function to convert markdown to HTML
@@ -146,164 +229,147 @@
                 .replace(/<strong>(Tính cách|Personality):<\/strong>/g, '🎭 <strong>$1:</strong>');
         }
 
-        document.getElementById('submit').addEventListener('click', () => {
+        // Thêm biến để quản lý auto open
+        let autoOpenTimeouts = [];
+        let autoOpenStopped = false;
+
+        // Hàm mở card thủ công và dừng auto open
+        function manualOpenCard(cardId) {
+            autoOpenStopped = true;
+            clearAutoOpenTimeouts();
+            const card = document.getElementById(cardId);
+            card.classList.remove('hidden');
+        }
+        function clearAutoOpenTimeouts() {
+            autoOpenTimeouts.forEach(t => clearTimeout(t));
+            autoOpenTimeouts = [];
+        }
+
+        // Add new functions for enhanced analysis
+        async function processDOB() {
             const dob = document.getElementById('dob').value;
             const resultDiv = document.getElementById('result');
             const submitBtn = document.getElementById('submit');
-            const placeholder = document.getElementById('placeholder');
-            
+            const dobError = document.getElementById('dob-error');
+            const spinner = document.getElementById('spinner');
+            const tryAnotherBtn = document.getElementById('try-another');
+
+            // Reset UI state before processing
+            resultDiv.classList.add('hidden');
+            resultDiv.classList.remove('fade-in');
+            document.getElementById('basic-info').innerHTML = '';
+            document.getElementById('personality-traits').innerHTML = '';
+            document.getElementById('life-cycle').innerHTML = '';
+            document.getElementById('interesting-facts').innerHTML = '';
+            tryAnotherBtn.style.display = 'none';
+            spinner.style.display = 'none';
+            dobError.style.display = 'none';
+            // Ẩn tất cả các card và nút khi bắt đầu
+            document.getElementById('basic-info-card').classList.add('hidden');
+            document.getElementById('personality-traits-card').classList.add('hidden');
+            document.getElementById('life-cycle-card').classList.add('hidden');
+            document.getElementById('interesting-facts-card').classList.add('hidden');
+            document.getElementById('btn-personality').classList.add('hidden');
+            document.getElementById('btn-life-cycle').classList.add('hidden');
+            document.getElementById('btn-interesting').classList.add('hidden');
+            // Ẩn progress bar khi bắt đầu
+            document.getElementById('progress-bar-container').classList.add('hidden');
+            document.getElementById('progress-bar').style.width = '0%';
+            // Ẩn các nút chọn card và reset auto open
+            document.getElementById('card-buttons').classList.add('hidden');
+            autoOpenStopped = false;
+            clearAutoOpenTimeouts();
+
             if (!dob) {
-                resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
-                    <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    ${LANGS[currentLang].invalid}
-                </div>`;
+                dobError.textContent = 'Please enter a valid date of birth.';
+                dobError.style.display = 'block';
                 return;
             }
 
-            // Always reset UI for new analysis
-            if (placeholder) placeholder.style.display = 'none';
-            resultDiv.innerHTML = '';
-            isProcessing = true;
+            console.log('[Step 1] User submitted DOB:', dob);
             submitBtn.disabled = true;
-            submitBtn.textContent = LANGS[currentLang].processing;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            // Add typing indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'flex items-center text-blue-500 mb-4';
-            typingDiv.innerHTML = `
-                <div class="typing-indicator mr-2"></div>
-                <span>${currentLang === 'vi' ? 'AI đang phân tích...' : 'AI is analyzing...'}</span>
-            `;
-            resultDiv.appendChild(typingDiv);
-
-            let dataReceived = false;
-            let accumulatedText = '';
-            let contentContainer = null;
+            spinner.style.display = 'flex';
+            setTimeout(() => {
+                resultDiv.classList.add('fade-in');
+                resultDiv.classList.remove('hidden');
+                // Hiện card Basic Info ngay lập tức
+                document.getElementById('basic-info-card').classList.remove('hidden');
+                // Ẩn spinner ngay khi đã có kết quả cơ bản
+                spinner.style.display = 'none';
+                // Hiện thông báo và các nút chọn card
+                document.getElementById('card-buttons').classList.remove('hidden');
+                // Tự động mở từng card nếu user không chọn gì
+                autoOpenTimeouts.push(setTimeout(() => {
+                    if (!autoOpenStopped) document.getElementById('personality-traits-card').classList.remove('hidden');
+                    autoOpenTimeouts.push(setTimeout(() => {
+                        if (!autoOpenStopped) document.getElementById('life-cycle-card').classList.remove('hidden');
+                        autoOpenTimeouts.push(setTimeout(() => {
+                            if (!autoOpenStopped) document.getElementById('interesting-facts-card').classList.remove('hidden');
+                        }, 3000));
+                    }, 3000));
+                }, 3000));
+            }, 200);
+            tryAnotherBtn.style.display = 'block';
             
-            const source = new EventSource(`/api/process-dob?dob=${dob}&lang=${currentLang}`);
-            
-            source.onmessage = (event) => {
-                dataReceived = true;
-                
-                try {
-                    // Try to parse as JSON first
-                    const data = JSON.parse(event.data);
-                    
-                    if (data.error) {
-                        // Handle error
-                        resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
-                            <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            ${data.error}
-                        </div>`;
-                        return;
-                    }
-                    
-                    if (data.end) {
-                        // Stream ended
-                        source.close();
-                        // Reset button state
-                        isProcessing = false;
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = LANGS[currentLang].process;
-                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        // Clear date input and focus for next analysis
-                        document.getElementById('dob').value = '';
-                        document.getElementById('dob').focus();
-                        return;
-                    }
-                    
-                    if (data.text) {
-                        // Remove typing indicator on first real data
-                        if (typingDiv.parentNode) {
-                            typingDiv.remove();
-                        }
-                        
-                        // Create content container if it doesn't exist
-                        if (!contentContainer) {
-                            contentContainer = document.createElement('div');
-                            contentContainer.className = 'markdown-content space-y-2';
-                            resultDiv.appendChild(contentContainer);
-                        }
-                        
-                        // Accumulate text
-                        accumulatedText += data.text;
-                        
-                        // Convert markdown to HTML and enhance
-                        let htmlContent = markdownToHtml(accumulatedText);
-                        htmlContent = enhanceContent(htmlContent);
-                        
-                        // Clean up any remaining markdown syntax that wasn't converted
-                        htmlContent = htmlContent
-                            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                            .replace(/\n/g, '<br>');
-                        
-                        contentContainer.innerHTML = htmlContent;
-                        
-                        // Scroll to bottom
-                        resultDiv.scrollTop = resultDiv.scrollHeight;
-                    }
-                    
-                } catch (e) {
-                    // If not JSON, treat as plain text (fallback)
-                    if (typingDiv.parentNode) {
-                        typingDiv.remove();
-                    }
-                    
-                    if (!contentContainer) {
-                        contentContainer = document.createElement('div');
-                        contentContainer.className = 'markdown-content space-y-2';
-                        resultDiv.appendChild(contentContainer);
-                    }
-                    
-                    accumulatedText += event.data;
-                    
-                    // Convert markdown to HTML and enhance
-                    let htmlContent = markdownToHtml(accumulatedText);
-                    htmlContent = enhanceContent(htmlContent);
-                    
-                    // Clean up any remaining markdown syntax that wasn't converted
-                    htmlContent = htmlContent
-                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                        .replace(/\n/g, '<br>');
-                    
-                    contentContainer.innerHTML = htmlContent;
-                    resultDiv.scrollTop = resultDiv.scrollHeight;
-                }
-            };
+            try {
+                console.log('[Step 2] Calculating age...');
+                const age = calculateAge(dob);
+                console.log('[Step 2] Age calculated:', age);
 
-            source.onerror = () => {
-                if (!dataReceived) {
-                    resultDiv.innerHTML = `<div class="text-red-500 text-center py-4">
-                        <svg class="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        ${LANGS[currentLang].error}
-                    </div>`;
-                }
-                source.close();
-                
-                // Reset button state
-                isProcessing = false;
-                submitBtn.disabled = false;
-                submitBtn.textContent = LANGS[currentLang].process;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            };
+                console.log('[Step 3] Determining zodiac sign...');
+                const zodiac = getZodiacSign(dob);
+                console.log('[Step 3] Zodiac sign:', zodiac);
 
-            // Handle stream completion
-            source.addEventListener('close', () => {
-                isProcessing = false;
+                console.log('[Step 4] Determining life stage...');
+                const lifeStage = getLifeStage(age.years);
+                console.log('[Step 4] Life stage:', lifeStage);
+
+                // Format the results
+                const basicInfo = `**Your Age:** ${age.years} years, ${age.months} months, and ${age.days} days\n` +
+                                 `**Zodiac Sign:** ${zodiac}\n` +
+                                 `**Life Stage:** ${lifeStage}`;
+
+                // These would be populated by the backend
+                const personalityTraits = `- ${zodiac} characteristics\n- Numerology insights\n- Life path number analysis`;
+
+                const lifeCycle = `- Major life milestones\n- Career potential\n- Relationship compatibility`;
+
+                console.log('[Step 5] Generating interesting facts...');
+                const daysOld = Math.floor((new Date() - new Date(dob)) / (1000 * 60 * 60 * 24));
+                const famous = getFamousBirthdays(dob);
+                const event = getHistoricalEvent(dob, 10);
+                const numerologyNum = getNumerology(dob);
+                const numerologyFact = getNumerologyFact(numerologyNum);
+                console.log('[Step 5] Days old:', daysOld);
+                console.log('[Step 5] Famous birthdays:', famous);
+                console.log('[Step 5] 10th birthday event:', event);
+                console.log('[Step 5] Numerology:', numerologyNum, numerologyFact);
+
+                const interestingFacts = `You are approximately **${daysOld} days old**.\n` +
+                    `Famous people born on your date: ${famous}\n` +
+                    `On your 10th birthday, this happened: ${event}\n` +
+                    `Your birth date numerology number is ${numerologyNum}: ${numerologyFact}`;
+
+                // Update the display
+                document.getElementById('basic-info').innerHTML = enhanceContent(markdownToHtml(basicInfo));
+                document.getElementById('personality-traits').innerHTML = enhanceContent(markdownToHtml(personalityTraits));
+                document.getElementById('life-cycle').innerHTML = enhanceContent(markdownToHtml(lifeCycle));
+                document.getElementById('interesting-facts').innerHTML = enhanceContent(markdownToHtml(interestingFacts));
+                console.log('[Step 6] Display updated.');
+
+            } catch (error) {
+                console.error('[Error] Processing DOB:', error);
+                spinner.style.display = 'none';
+                alert('Error processing your birth date. Please try again.');
+            } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = LANGS[currentLang].process;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            });
-        });
+                spinner.style.display = 'none';
+                console.log('[Step 7] Processing complete.');
+            }
+        }
+
+        // Update event listener
+        document.getElementById('submit').addEventListener('click', processDOB);
 
         // Set max date for dob input to today (GMT+7)
         function getTodayGmt7() {
@@ -314,6 +380,152 @@
             return gmt7.toISOString().slice(0, 10);
         }
         document.getElementById('dob').max = getTodayGmt7();
+
+        // Add logs to helpers
+        function calculateAge(birthDate) {
+            console.log('[Helper] calculateAge called with:', birthDate);
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let years = today.getFullYear() - birth.getFullYear();
+            let months = today.getMonth() - birth.getMonth();
+            let days = today.getDate() - birth.getDate();
+
+            if (days < 0) {
+                months--;
+                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            console.log('[Helper] calculateAge result:', { years, months, days });
+            return { years, months, days };
+        }
+        function getZodiacSign(birthDate) {
+            console.log('[Helper] getZodiacSign called with:', birthDate);
+            const date = parseInt(birthDate.split('-')[2]);
+            const month = parseInt(birthDate.split('-')[1]);
+            const signs = [
+                { name: 'Capricorn', dates: [22, 19] },
+                { name: 'Aquarius', dates: [20, 18] },
+                { name: 'Pisces', dates: [19, 20] },
+                { name: 'Aries', dates: [21, 19] },
+                { name: 'Taurus', dates: [20, 20] },
+                { name: 'Gemini', dates: [21, 20] },
+                { name: 'Cancer', dates: [21, 22] },
+                { name: 'Leo', dates: [23, 22] },
+                { name: 'Virgo', dates: [23, 22] },
+                { name: 'Libra', dates: [23, 22] },
+                { name: 'Scorpio', dates: [23, 21] },
+                { name: 'Sagittarius', dates: [22, 21] }
+            ];
+            const currentSign = signs[month - 1];
+            const result = date >= currentSign.dates[0] || date <= currentSign.dates[1] ? currentSign.name : signs[month % 12].name;
+            console.log('[Helper] getZodiacSign result:', result);
+            return result;
+        }
+        function getLifeStage(age) {
+            console.log('[Helper] getLifeStage called with:', age);
+            let stage = '';
+            if (age < 13) stage = 'Childhood';
+            else if (age < 20) stage = 'Adolescence';
+            else if (age < 40) stage = 'Young Adult';
+            else if (age < 60) stage = 'Middle Age';
+            else stage = 'Senior';
+            console.log('[Helper] getLifeStage result:', stage);
+            return stage;
+        }
+        function getFamousBirthdays(dob) {
+            console.log('[Helper] getFamousBirthdays called with:', dob);
+            const monthDay = dob.slice(5);
+            const famous = {
+                '01-01': 'Paul Revere, Verne Troyer',
+                '07-20': 'Alexander the Great, Gisele Bündchen',
+                '12-25': 'Isaac Newton, Justin Trudeau',
+                // ... add more as needed
+            };
+            const result = famous[monthDay] || 'No major celebrities found (try 01-01, 07-20, 12-25)';
+            console.log('[Helper] getFamousBirthdays result:', result);
+            return result;
+        }
+        function getHistoricalEvent(dob, yearsAfter) {
+            console.log('[Helper] getHistoricalEvent called with:', dob, yearsAfter);
+            const year = parseInt(dob.slice(0, 4)) + yearsAfter;
+            const events = {
+                2000: 'Y2K bug was a big topic!',
+                2010: 'Instagram was launched.',
+                2020: 'Global COVID-19 pandemic.',
+                // ... add more as needed
+            };
+            const result = events[year] || 'No major event found for that year.';
+            console.log('[Helper] getHistoricalEvent result:', result);
+            return result;
+        }
+        function getNumerology(dob) {
+            console.log('[Helper] getNumerology called with:', dob);
+            const digits = dob.replace(/-/g, '').split('').map(Number);
+            let sum = digits.reduce((a, b) => a + b, 0);
+            while (sum > 9) sum = sum.toString().split('').reduce((a, b) => a + +b, 0);
+            console.log('[Helper] getNumerology result:', sum);
+            return sum;
+        }
+        function getNumerologyFact(num) {
+            console.log('[Helper] getNumerologyFact called with:', num);
+            const facts = {
+                1: 'Leadership and independence.',
+                2: 'Harmony and partnership.',
+                3: 'Creativity and joy.',
+                4: 'Stability and discipline.',
+                5: 'Adventure and freedom.',
+                6: 'Care and responsibility.',
+                7: 'Intellect and introspection.',
+                8: 'Power and ambition.',
+                9: 'Compassion and idealism.'
+            };
+            const result = facts[num] || 'A unique number!';
+            console.log('[Helper] getNumerologyFact result:', result);
+            return result;
+        }
+
+        // Thêm hàm toggleCard để mở/đóng từng card
+        function toggleCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (card.classList.contains('hidden')) {
+                card.classList.remove('hidden');
+                card.style.maxHeight = card.scrollHeight + 'px';
+            } else {
+                card.classList.add('hidden');
+                card.style.maxHeight = null;
+            }
+        }
+
+        // Try another date button logic
+        document.getElementById('try-another').onclick = function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.add('hidden');
+            resultDiv.classList.remove('fade-in');
+            document.getElementById('dob').value = '';
+            document.getElementById('dob-error').style.display = 'none';
+            document.getElementById('basic-info').innerHTML = '';
+            document.getElementById('personality-traits').innerHTML = '';
+            document.getElementById('life-cycle').innerHTML = '';
+            document.getElementById('interesting-facts').innerHTML = '';
+            document.getElementById('spinner').style.display = 'none';
+            this.style.display = 'none';
+            document.getElementById('basic-info-card').classList.add('hidden');
+            document.getElementById('personality-traits-card').classList.add('hidden');
+            document.getElementById('life-cycle-card').classList.add('hidden');
+            document.getElementById('interesting-facts-card').classList.add('hidden');
+            document.getElementById('btn-personality').classList.add('hidden');
+            document.getElementById('btn-life-cycle').classList.add('hidden');
+            document.getElementById('btn-interesting').classList.add('hidden');
+            // Ẩn progress bar khi bắt đầu
+            document.getElementById('progress-bar-container').classList.add('hidden');
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('card-buttons').classList.add('hidden');
+            autoOpenStopped = false;
+            clearAutoOpenTimeouts();
+        };
     </script>
 </body>
 </html>
