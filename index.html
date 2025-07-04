@@ -183,7 +183,7 @@
             let accumulatedText = '';
             let contentContainer = null;
             
-            const source = new EventSource(`http://localhost:3000/process-dob/${dob}?lang=${currentLang}`);
+            const source = new EventSource(`/api/process-dob?dob=${dob}&lang=${currentLang}`);
             
             source.onmessage = (event) => {
                 dataReceived = true;
