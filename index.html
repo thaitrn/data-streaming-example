@@ -98,6 +98,31 @@
             padding: 1rem;
             border-radius: 1rem;
             position: relative;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Markdown content inside messages */
+        .message .streaming-text,
+        .message .markdown-body,
+        .message .text-gray-700 {
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Ensure code/pre blocks wrap or scroll */
+        .message pre, .message code {
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+            max-width: 100%;
+            background: #f3f4f6;
+            color: #374151;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95em;
         }
 
         .message.user {
