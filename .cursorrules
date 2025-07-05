@@ -1,0 +1,409 @@
+# Cursor Rules for Software Engineer
+
+## Overview
+You are an expert Software Engineer specializing in modern web development with TypeScript, React, Next.js, and full-stack applications. Follow these comprehensive guidelines to ensure high-quality, maintainable, and scalable code.
+
+## Code Style and Structure
+
+### General Principles
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+- Follow DRY, KISS, and YAGNI principles
+- Use strict typing in all languages
+- Use named parameters in function calls when possible
+- No duplicate code; check if logic already exists before writing
+- Avoid unnecessary wrapper functions without clear purpose
+
+### Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard)
+- Use camelCase for variables, functions, and methods
+- Use PascalCase for React components and constructors
+- Use UPPERCASE for environment variables
+- Use kebab-case for file names
+- Favor named exports over default exports
+- Use descriptive names that explain purpose
+
+## TypeScript Best Practices
+
+### Type Safety
+- Use TypeScript for all code; prefer interfaces over types for object shapes
+- Never use `any` type; use explicit types, interfaces, or `unknown` with type guards
+- Avoid enums; use literal types or maps instead
+- Use strict mode in TypeScript for better type safety
+- Reuse interfaces and place them in a `models/` directory when shared across files
+- Use type inference when possible
+- Enable strict mode and noImplicitAny
+
+### Function Parameters
+- Always pass parameters as a single object (named parameters pattern)
+```typescript
+// Good
+function doSomething({ id, name }: { id: string; name: string }) { /* ... */ }
+
+// Bad
+function doSomething(id: string, name: string) { /* ... */ }
+```
+
+### Imports and Exports
+- Use shorter imports via path aliases (e.g., `@/components/...`)
+- Do not use index exports; use named exports and import modules directly
+```typescript
+// Good
+import { Button } from '@/components/shared/ui/button';
+
+// Bad
+import { Button } from '@/components/shared/ui';
+```
+
+### Functional Programming
+- Do not use classes; use functional methods and hooks
+- Always wrap `if` statements in curly braces, even for single-line blocks
+```typescript
+// Good
+if (isActive) {
+  doSomething();
+}
+
+// Bad
+if (isActive) doSomething();
+```
+
+## React Best Practices
+
+### Component Structure
+- Use functional components with TypeScript interfaces
+- Implement hooks correctly (useState, useEffect, useContext, useReducer, useMemo, useCallback)
+- Follow Rules of Hooks (only call hooks at top level, only call hooks from React functions)
+- Create custom hooks to extract reusable component logic
+- Prefer composition over inheritance
+- Use children prop and render props pattern for flexible, reusable components
+- Implement React.lazy() and Suspense for code splitting
+- Use refs sparingly and mainly for DOM access
+- Prefer controlled components over uncontrolled components
+- Implement error boundaries to catch and handle errors gracefully
+- Use cleanup functions in useEffect to prevent memory leaks
+- Use short-circuit evaluation and ternary operators for conditional rendering
+- Use dynamic loading for non-critical components
+
+### Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC)
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize images: use WebP format, include size data, implement lazy loading
+- Implement code splitting and lazy loading with React's Suspense
+- Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately
+- Profile and monitor performance using React's built-in tools
+
+### State Management
+- Use React Context and useReducer for managing global state
+- Leverage React Query/TanStack Query for data fetching and caching
+- For complex state management, consider using Zustand or Redux Toolkit
+- Handle URL search parameters using libraries like nuqs
+- Lift state up when needed to share state between components
+- Use context for intermediate state sharing when prop drilling becomes cumbersome
+
+## Next.js Best Practices
+
+### App Router
+- Use Next.js 14 App Router for modern development
+- Implement server components by default
+- Use 'use client' only when necessary for client-side interactivity
+- Implement proper loading states with Suspense
+- Use dynamic imports for code splitting
+- Implement proper error boundaries with error.tsx
+
+### Data Fetching
+- Fetch data in server components and pass down as props to client components
+- Use server actions for mutations
+- Implement proper caching strategies
+- Handle loading and error states gracefully
+- Use React Query for client-side data fetching when needed
+
+### API Routes
+- Create API routes in app/api/ directory
+- Implement proper error handling and status codes
+- Use Zod for input validation
+- Implement rate limiting and security measures
+- Return consistent response formats
+
+## UI and Styling
+
+### Tailwind CSS
+- Use Tailwind CSS for utility-first styling
+- Organize classes logically: layout, sizing, spacing, visual, typography, interactive, responsive
+- Use mobile-first responsive design
+- Use semantic color naming with numeric scale (primary-100, primary-900)
+- Apply opacity with slash notation: `bg-primary-100/20`
+- Use consistent dark mode variants: `dark:bg-primary-900/10`
+- Use flex and grid for layouts
+- Use gap utilities instead of margins between flex/grid children
+
+### Component Libraries
+- Use Shadcn/ui for component foundations
+- Implement responsive design with Tailwind CSS; use mobile-first approach
+- Use Tailwind for utility classes and rapid prototyping
+- Implement dark mode support
+- Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props
+
+## Error Handling and Validation
+
+### General Principles
+- Prioritize error handling and edge cases
+- Handle errors and edge cases at the beginning of functions
+- Use early returns for error conditions to avoid deeply nested if statements
+- Place the happy path last in the function for improved readability
+- Avoid unnecessary else statements; use if-return pattern instead
+- Use guard clauses to handle preconditions and invalid states early
+- Implement proper error logging and user-friendly error messages
+- Model expected errors as return values in Server Actions
+- Use error boundaries for unexpected errors
+
+### Validation
+- Use Zod for form validation and runtime validation
+- Implement proper error logging using Sentry or similar service
+- Use custom error types or error factories for consistent error handling
+- Validate all inputs on both client and server side
+- Provide clear, actionable error messages
+
+```typescript
+// Example Zod schema
+import { z } from 'zod';
+
+const userSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().min(1),
+});
+
+type User = z.infer<typeof userSchema>;
+```
+
+## Forms and Validation
+
+### Form Handling
+- Use controlled components for form inputs
+- Implement form validation (client-side and server-side)
+- Consider using libraries like react-hook-form for complex forms
+- Use Zod for schema validation
+- Implement proper error states and loading states
+
+### Accessibility
+- Use semantic HTML elements
+- Implement proper ARIA attributes
+- Ensure keyboard navigation support
+- Provide proper labels and descriptions
+- Test with screen readers
+
+## Security Best Practices
+
+### Input Validation and Sanitization
+- Sanitize user inputs to prevent XSS attacks
+- Use dangerouslySetInnerHTML sparingly and only with sanitized content
+- Implement proper input validation at both client and server side
+- Validate file uploads and implement proper file type checking
+
+### Data Handling
+- Use HTTPS for all API communications
+- Implement proper authentication and authorization
+- Store sensitive data securely using environment variables
+- Use secure storage for tokens and sensitive information
+- Implement proper CORS configuration
+
+### API Security
+- Enforce data access control
+- Implement rate limiting
+- Use proper authentication middleware
+- Validate and sanitize all inputs
+- Log security events appropriately
+
+## Testing Guidelines
+
+### Unit Testing
+- Write unit tests for components using Jest and React Testing Library
+- Test behavior not implementation
+- Mock external dependencies
+- Use data-testid for testing selectors
+- Follow naming conventions for test files
+- Keep tests focused and isolated
+- Use descriptive test names
+
+### Integration Testing
+- Implement integration tests for critical user flows
+- Test API endpoints with proper test data
+- Use proper test environments
+- Test error scenarios and edge cases
+
+### Best Practices
+- Implement proper setup and teardown
+- Use fixtures for test data
+- Mock external services and APIs
+- Test accessibility features
+- Implement visual regression testing when applicable
+
+## Project Structure
+
+### Folder Organization
+```
+src/
+├── components/
+│   ├── ui/           # Reusable UI components
+│   ├── forms/        # Form components
+│   └── layout/       # Layout components
+├── hooks/            # Custom hooks
+├── lib/              # Utility functions
+├── types/            # TypeScript type definitions
+├── utils/            # Helper functions
+├── constants/        # App constants
+├── styles/           # Global styles
+└── tests/            # Test files
+```
+
+### File Naming
+- Use kebab-case for directories
+- Use PascalCase for React components
+- Use camelCase for utilities and hooks
+- Use lowercase with dashes for config files
+
+### Code Organization
+- Organize code by feature when project is large
+- Keep related files close together
+- Separate business logic from UI components
+- Use barrel exports (index files) sparingly
+
+## Performance Optimization
+
+### Frontend Performance
+- Minimize use of 'use client', 'useEffect', and 'setState'
+- Favor React Server Components (RSC)
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize images: WebP format, size data, lazy loading
+- Implement code splitting and lazy loading with React's Suspense
+
+### Caching and Data Fetching
+- Use React Query/TanStack Query for data fetching and caching
+- Leverage proper caching strategies
+- Avoid excessive API calls
+- Implement proper error boundaries for unexpected errors
+
+### Key Conventions
+- Optimize Web Vitals (LCP, CLS, FID)
+- Limit 'use client': favor server components and Next.js SSR
+- Use 'use client' only for Web API access in small components
+- Avoid using 'use client' for data fetching or state management
+
+## Documentation Standards
+
+### TSDoc Comments
+- Use TSDoc for function and class documentation
+- Document complex business logic
+- Do not comment obvious things
+- Only document extraordinary changes or complex logic
+- Use JSDoc or short description for top-level functions
+
+```typescript
+/**
+ * Calculates the total price including tax and discounts
+ * @param basePrice - The base price before calculations
+ * @param taxRate - Tax rate as decimal (e.g., 0.1 for 10%)
+ * @param discountPercent - Discount percentage (0-100)
+ * @returns The final calculated price
+ */
+function calculateTotal(basePrice: number, taxRate: number, discountPercent: number): number {
+  // Implementation
+}
+```
+
+### README and Documentation
+- Maintain up-to-date README files
+- Document API endpoints
+- Include setup instructions
+- Document environment variables and configuration
+- Keep examples synchronized with code
+- Update references to external docs
+
+## Database and Backend Best Practices
+
+### Schema Design
+- Use proper relational design principles
+- Implement proper constraints
+- Use meaningful table and column names
+- Follow consistent naming conventions
+- Use enums for limited value sets
+
+### Query Optimization
+- Use indexes effectively
+- Avoid N+1 queries
+- Implement proper pagination
+- Use query builders or ORMs safely
+- Monitor query performance
+
+### Data Access
+- Implement proper data access layers
+- Use transactions when necessary
+- Handle database errors gracefully
+- Implement proper connection pooling
+- Use prepared statements to prevent SQL injection
+
+## Deployment and DevOps
+
+### Environment Management
+- Use environment variables for configuration
+- Separate environments (dev, staging, production)
+- Implement proper CI/CD pipelines
+- Use proper secret management
+- Implement proper SSL/TLS
+
+### Performance Monitoring
+- Implement application monitoring
+- Track performance metrics
+- Set up proper logging
+- Monitor error rates and response times
+- Use tools like Sentry, Datadog, or similar
+
+### Security
+- Implement proper SSL/TLS
+- Use security headers
+- Regular security updates
+- Implement proper backup strategies
+- Monitor for security vulnerabilities
+
+## Key Conventions
+
+1. Rely on Next.js App Router for state changes
+2. Prioritize Web Vitals (LCP, CLS, FID)
+3. Minimize 'use client' usage:
+   - Prefer server components and Next.js SSR features
+   - Use 'use client' only for Web API access in small components
+   - Avoid using 'use client' for data fetching or state management
+4. Follow Next.js documentation for Data Fetching, Rendering, and Routing best practices
+5. Use TypeScript strictly for all code
+6. Implement proper error handling and validation
+7. Write tests for critical functionality
+8. Document complex business logic
+9. Follow accessibility guidelines
+10. Implement proper security measures
+
+## Continuous Improvement
+
+### Rule Updates
+- Monitor code review comments
+- Track common development questions
+- Update rules after major refactors
+- Add links to relevant documentation
+- Cross-reference related rules
+- Keep examples synchronized with code
+- Update references to external docs
+- Document breaking changes
+
+### Quality Checks
+- Rules should be actionable and specific
+- Examples should come from actual code
+- References should be up to date
+- Patterns should be consistently enforced
+- Rules should be reviewed regularly
+
+Follow these guidelines to ensure high-quality, maintainable, and scalable code that meets modern development standards. 

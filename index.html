@@ -3,494 +3,763 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Streaming DOB App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>AI DOB Insights - Streaming Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <style>
-        html, body {
-            font-family: 'Poppins', Arial, sans-serif;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
             min-height: 100vh;
+            color: var(--text-primary);
         }
-        h1, h2, h3 {
-            font-family: 'Poppins', Arial, sans-serif;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+
+        /* 🚀 1. Streaming Responses - Smooth animations */
+        .streaming-text {
+            animation: fadeInUp 0.3s ease-out;
         }
-        h1 { font-size: 2.5rem; }
-        h2 { font-size: 2rem; }
-        h3 { font-size: 1.25rem; }
-        .markdown-content p, .markdown-content li {
-            font-size: 1.08rem;
-            line-height: 1.7;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .max-w-4xl {
-            background: rgba(255,255,255,0.7);
-            border-radius: 2rem;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
-        }
-        .rounded-xl, .rounded-2xl {
-            border-radius: 1.25rem !important;
-        }
-        .shadow-xl, .shadow {
-            box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10) !important;
-        }
+
+        /* 📱 2. Progressive Disclosure - Smooth card reveals */
         .card {
-            transition: box-shadow 0.3s, transform 0.3s;
-            border: 1.5px solid #e5e7eb;
-            background: #fff;
-        }
-        .card:hover {
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-            transform: translateY(-2px) scale(1.01);
-        }
-        .card h3 {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .card .icon {
-            width: 1.3em;
-            height: 1.3em;
-            vertical-align: middle;
-        }
-        .modern-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.08);
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-        }
-        .modern-btn svg {
-            width: 1.2em;
-            height: 1.2em;
-        }
-        .modern-btn:hover {
-            background: #3b82f6;
-            color: #fff;
-            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.15);
-        }
-        #progress-bar-container {
-            margin-bottom: 1.5rem;
-        }
-        #progress-bar {
-            background: linear-gradient(90deg, #60a5fa 0%, #818cf8 100%);
-            animation: progress-stripes 1s linear infinite;
-        }
-        @keyframes progress-stripes {
-            0% { background-position: 0 0; }
-            100% { background-position: 40px 0; }
-        }
-        /* Card reveal animation */
-        .card, .rounded-xl, .rounded-b-xl {
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.5s, transform 0.5s;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .card.show, .rounded-xl.show, .rounded-b-xl.show {
+
+        .card.show {
             opacity: 1;
             transform: translateY(0);
         }
-        /* Force show for debug/fix */
-        #basic-info, .markdown-content {
-            color: #222 !important;
-            opacity: 1 !important;
-            display: block !important;
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        #basic-info-card {
-            opacity: 1 !important;
-            display: block !important;
+
+        /* 🎯 3. Interactive Elements - Micro-interactions */
+        .interactive-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        /* Responsive tweaks */
-        @media (max-width: 640px) {
-            h1 { font-size: 2rem; }
-            h2 { font-size: 1.3rem; }
-            .max-w-4xl { padding: 0.5rem; }
-            .grid-cols-1, .md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+
+        .interactive-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
         }
-        /* AI typing dots animation */
-        #ai-dots .dot {
-            animation: blink 1.2s infinite both;
-            font-size: 1.5em;
+
+        .interactive-btn:active::before {
+            width: 200px;
+            height: 200px;
         }
-        #ai-dots .dot:nth-child(2) { animation-delay: 0.2s; }
-        #ai-dots .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink {
-            0%, 80%, 100% { opacity: 0; }
-            40% { opacity: 1; }
+
+        /* 💬 4. Conversational UI - Chat-like interface */
+        .conversation-container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-        /* Pulse effect for highlight button */
-        .pulse-highlight {
-            box-shadow: 0 0 0 0 rgba(34,197,94,0.7);
-            animation: pulse-green 1.5s infinite;
-            border: 2.5px solid #22c55e;
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            position: relative;
         }
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
-            70% { box-shadow: 0 0 0 12px rgba(34,197,94,0.0); }
-            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
+
+        .message.user {
+            background: var(--primary);
+            color: white;
+            margin-left: 2rem;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.ai {
+            background: white;
+            margin-right: 2rem;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 🔄 5. Feedback Mechanisms */
+        .feedback-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .feedback-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .feedback-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+
+        .feedback-btn.positive:hover {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .feedback-btn.negative:hover {
+            background: #fee2e2;
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        /* 🔮 6. Predictive UX - Smart suggestions */
+        .suggestions-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .suggestion-chip {
+            padding: 0.5rem 1rem;
+            background: #f3f4f6;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            border: 1px solid transparent;
+        }
+
+        .suggestion-chip:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* 🎨 7. Multi-modal - Voice input support */
+        .voice-input {
+            position: relative;
+        }
+
+        .voice-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .voice-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .voice-btn.recording {
+            background: var(--error);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading states */
+        .loading-dots {
+            display: inline-flex;
+            gap: 0.25rem;
+        }
+
+        .loading-dots .dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: currentColor;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .conversation-container {
+                padding: 1rem;
+            }
+            
+            .message.user {
+                margin-left: 1rem;
+            }
+            
+            .message.ai {
+                margin-right: 1rem;
+            }
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus states for keyboard navigation */
+        button:focus,
+        input:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-4">
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <h1 id="title" class="text-4xl font-extrabold mb-6 text-center tracking-tight">AI DOB Insights</h1>
-        <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
-            <div class="mb-6 input-icon">
-                <label for="dob" id="dob-label" class="block text-gray-700 font-semibold mb-2 text-lg">Enter Your Birth Date:</label>
-                <input type="date" id="dob" class="w-full p-2 border rounded pl-10 text-lg" required pattern="\\d{4}-\\d{2}-\\d{2}" inputmode="none" onkeydown="return false;">
-                <div id="dob-error" class="input-error" style="display:none;"></div>
-            </div>
-            <button id="submit" class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 text-lg font-semibold transition">Get My Insights</button>
-            <div id="spinner" style="display:none;" class="flex justify-center mt-4">
-                <div class="animate-spin rounded-full h-8 w-8 border-t-4 border-b-4 border-blue-500"></div>
+<body class="min-h-screen py-8">
+    <div class="conversation-container">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">AI DOB Insights</h1>
+            <p class="text-white/80 text-lg">Get personalized analysis of your birth date with streaming AI responses</p>
+        </div>
+
+        <!-- Language Toggle -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-white/10 backdrop-blur-sm rounded-full p-1">
+                <button id="lang-vi" class="px-4 py-2 rounded-full text-white transition-all" onclick="setLanguage('vi')">🇻🇳 Tiếng Việt</button>
+                <button id="lang-en" class="px-4 py-2 rounded-full text-white transition-all" onclick="setLanguage('en')">🇺🇸 English</button>
             </div>
         </div>
 
-        <div id="result" class="bg-white rounded-2xl shadow-xl p-8 mb-10 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Your Personal Insights</h2>
-                <div id="ai-status" class="flex items-center gap-2 text-blue-500 text-lg font-semibold">
-                    <span id="ai-status-text">AI đang phân tích...</span>
-                    <span id="ai-dots" class="inline-block"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+        <!-- Input Form -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6">
+            <div class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label for="dob" class="block text-white font-medium mb-2">Enter your birth date</label>
+                    <div class="voice-input relative">
+                        <input 
+                            type="date" 
+                            id="dob" 
+                            class="w-full px-4 py-3 rounded-xl border-2 border-white/20 bg-white/10 text-white placeholder-white/60 focus:border-white/40 focus:bg-white/20 transition-all"
+                            required
+                            max="2024-12-31"
+                        >
+                        <button 
+                            type="button" 
+                            class="voice-btn" 
+                            onclick="startVoiceInput()"
+                            title="Voice input"
+                        >
+                            🎤
+                        </button>
+                    </div>
+                    <div id="dob-error" class="text-red-300 text-sm mt-1 hidden"></div>
                 </div>
+                <button 
+                    id="submit" 
+                    class="interactive-btn bg-white text-gray-800 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="processDOB()"
+                >
+                    <span class="flex items-center gap-2">
+                        <span id="submit-text">Analyze</span>
+                        <div id="loading-spinner" class="hidden">
+                            <div class="loading-dots">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                    </span>
+                </button>
             </div>
-            <div id="insight-hint" class="text-center text-gray-600 mb-6">Bạn có muốn xem thêm về Your Personality Traits, Life Cycle Analysis, Interesting Facts?</div>
-            <div id="card-buttons" class="flex flex-col md:flex-row gap-4 justify-center mb-6 hidden">
-                <button id="btn-personality" class="modern-btn bg-teal-100 text-teal-700 font-semibold py-2 px-4" onclick="manualOpenCard('personality-traits-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Xem Personality Traits</button>
-                <button id="btn-life-cycle" class="modern-btn bg-yellow-100 text-yellow-700 font-semibold py-2 px-4" onclick="manualOpenCard('life-cycle-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg> Xem Life Cycle Analysis</button>
-                <button id="btn-interesting" class="modern-btn bg-pink-100 text-pink-700 font-semibold py-2 px-4" onclick="manualOpenCard('interesting-facts-card')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Xem Interesting Facts</button>
+
+            <!-- Smart Suggestions -->
+            <div id="suggestions" class="suggestions-container mt-4">
+                <div class="suggestion-chip" onclick="setQuickDate('1990-01-01')">🎂 My birthday</div>
+                <div class="suggestion-chip" onclick="setQuickDate('2000-01-01')">🌟 New millennium</div>
+                <div class="suggestion-chip" onclick="setQuickDate('1985-06-15')">📅 Random date</div>
             </div>
-            <div id="progress-bar-container" class="w-full flex justify-center mb-6 hidden">
-                <div class="w-2/3 bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div id="progress-bar" class="bg-blue-400 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Basic Info (always visible after submit) -->
-                <div>
-                    <div id="basic-info-card" class="bg-indigo-50 p-6 rounded-xl shadow card">
-                        <h3 class="text-lg font-bold mb-2 text-indigo-700"><span class="icon">📋</span>Basic Information</h3>
-                        <div class="markdown-content" id="basic-info"></div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results" class="hidden">
+            <!-- AI Response -->
+            <div id="ai-response" class="message ai mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        🤖
+                    </div>
+                    <div>
+                        <div class="font-semibold">AI Assistant</div>
+                        <div class="text-sm text-gray-500" id="ai-status">Analyzing your birth date...</div>
                     </div>
                 </div>
-                <!-- Personal Traits -->
-                <div>
-                    <div id="personality-traits-card" class="bg-teal-50 p-6 rounded-b-xl shadow card hidden">
-                        <h3 class="text-lg font-bold mb-2 text-teal-700"><span class="icon">🧠</span>Your Personality Traits</h3>
-                        <div class="markdown-content" id="personality-traits"></div>
-                    </div>
+                <div id="streaming-content" class="streaming-text"></div>
+            </div>
+
+            <!-- Detailed Analysis Cards -->
+            <div id="analysis-cards" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                <!-- Basic Info -->
+                <div id="basic-info-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        📊 Basic Information
+                    </h3>
+                    <div id="basic-info" class="text-gray-700"></div>
                 </div>
+
+                <!-- Personality -->
+                <div id="personality-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        🧠 Personality & Zodiac
+                    </h3>
+                    <div id="personality-content" class="text-gray-700"></div>
+                </div>
+
                 <!-- Life Cycle -->
-                <div>
-                    <div id="life-cycle-card" class="bg-yellow-50 p-6 rounded-b-xl shadow card hidden">
-                        <h3 class="text-lg font-bold mb-2 text-yellow-700"><span class="icon">🌱</span>Life Cycle Analysis</h3>
-                        <div class="markdown-content" id="life-cycle"></div>
-                    </div>
+                <div id="life-cycle-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        🌱 Life Cycle Analysis
+                    </h3>
+                    <div id="life-cycle-content" class="text-gray-700"></div>
                 </div>
+
                 <!-- Interesting Facts -->
-                <div>
-                    <div id="interesting-facts-card" class="bg-pink-50 p-6 rounded-b-xl shadow card hidden">
-                        <h3 class="text-lg font-bold mb-2 text-pink-700"><span class="icon">✨</span>Interesting Facts</h3>
-                        <div class="markdown-content" id="interesting-facts"></div>
-                    </div>
+                <div id="facts-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        ✨ Interesting Facts
+                    </h3>
+                    <div id="facts-content" class="text-gray-700"></div>
                 </div>
+
                 <!-- Shopping Suggestions -->
-                <div>
-                    <button id="btn-shopping" class="modern-btn bg-green-100 text-green-700 font-semibold py-2 px-4 pulse-highlight" onclick="manualOpenShoppingCard()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-13z"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>Gợi ý vật phẩm phong thuỷ</button>
-                    <div id="shopping-suggestions-card" class="bg-green-50 p-6 rounded-b-xl shadow card hidden">
-                        <h3 class="text-lg font-bold mb-2 text-green-700"><span class="icon">🛍️</span>Gợi ý vật phẩm phong thuỷ</h3>
-                        <div class="markdown-content" id="shopping-suggestions"></div>
-                    </div>
+                <div id="shopping-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        🛍️ Shopping Suggestions
+                    </h3>
+                    <div id="shopping-content" class="text-gray-700"></div>
                 </div>
             </div>
-            <button id="try-another" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold transition">Try Another Date</button>
+
+            <!-- Feedback Section -->
+            <div id="feedback-section" class="feedback-container mt-6">
+                <button class="feedback-btn positive" onclick="submitFeedback('positive')">
+                    👍 Helpful
+                </button>
+                <button class="feedback-btn negative" onclick="submitFeedback('negative')">
+                    👎 Not helpful
+                </button>
+                <button class="feedback-btn" onclick="submitFeedback('suggest')">
+                    💡 Suggest improvement
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mt-6">
+                <button 
+                    id="try-another" 
+                    class="interactive-btn bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                    onclick="resetForm()"
+                >
+                    🔄 Try Another Date
+                </button>
+                <button 
+                    class="interactive-btn bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                    onclick="shareResults()"
+                >
+                    📤 Share Results
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Language support
-        const LANGS = {
+        // 🚀 1. Streaming Responses Implementation
+        let currentLang = 'en';
+        let isProcessing = false;
+        let accumulatedText = '';
+        let eventSource = null;
+
+        const translations = {
+            en: {
+                title: 'AI DOB Insights',
+                subtitle: 'Get personalized analysis of your birth date with streaming AI responses',
+                dobLabel: 'Enter your birth date',
+                analyze: 'Analyze',
+                analyzing: 'Analyzing...',
+                aiStatus: 'Analyzing your birth date...',
+                complete: 'Analysis complete!',
+                error: 'Error connecting to server.',
+                invalidDate: 'Please enter a valid date of birth.',
+                tryAnother: 'Try Another Date',
+                share: 'Share Results',
+                helpful: 'Helpful',
+                notHelpful: 'Not helpful',
+                suggest: 'Suggest improvement'
+            },
             vi: {
                 title: 'Phân tích ngày sinh AI',
-                dobLabel: 'Nhập ngày sinh',
-                process: 'Xử lý',
-                processing: 'Đang xử lý...',
+                subtitle: 'Nhận phân tích cá nhân hóa về ngày sinh với phản hồi AI thời gian thực',
+                dobLabel: 'Nhập ngày sinh của bạn',
+                analyze: 'Phân tích',
+                analyzing: 'Đang phân tích...',
+                aiStatus: 'Đang phân tích ngày sinh...',
+                complete: 'Phân tích hoàn tất!',
                 error: 'Lỗi kết nối máy chủ.',
-                invalid: 'Vui lòng nhập ngày sinh hợp lệ.',
-                placeholder: 'Nhập ngày sinh của bạn để nhận phân tích từ AI'
-            },
-            en: {
-                title: 'AI Date of Birth Processor',
-                dobLabel: 'Enter Date of Birth',
-                process: 'Process',
-                processing: 'Processing...',
-                error: 'Error connecting to server.',
-                invalid: 'Please enter a valid date of birth.',
-                placeholder: 'Enter your date of birth to get AI analysis'
+                invalidDate: 'Vui lòng nhập ngày sinh hợp lệ.',
+                tryAnother: 'Thử ngày khác',
+                share: 'Chia sẻ kết quả',
+                helpful: 'Hữu ích',
+                notHelpful: 'Không hữu ích',
+                suggest: 'Đề xuất cải thiện'
             }
         };
-        
-        let currentLang = 'vi';
-        let isProcessing = false;
-        
-        const setLang = (lang) => {
+
+        function setLanguage(lang) {
             currentLang = lang;
-            document.getElementById('title').textContent = LANGS[lang].title;
-            document.getElementById('dob-label').textContent = LANGS[lang].dobLabel;
-            document.getElementById('submit').textContent = isProcessing ? LANGS[lang].processing : LANGS[lang].process;
-            const placeholder = document.getElementById('placeholder');
-            if (placeholder && placeholder.style.display !== 'none') {
-                placeholder.querySelector('p').textContent = LANGS[lang].placeholder;
-            }
-        };
-        setLang(currentLang);
-
-        // Function to convert markdown to HTML
-        function markdownToHtml(markdown) {
-            marked.setOptions({ breaks: true, gfm: true });
-            return marked.parse(markdown);
-        }
-        function enhanceContent(html) { return html; } // No emoji enhancement, keep backend formatting
-
-        // Helper: Đảm bảo card và content luôn tồn tại
-        function ensureCardAndContent(key, title) {
-            let card = document.getElementById(key+'-card');
-            let contentElem = document.getElementById(key);
-            const resultContainer = document.getElementById('ai-result-container');
-            if (!resultContainer) {
-                console.warn('Không tìm thấy #ai-result-container trong DOM!');
-                return { card: null, contentElem: null };
-            }
-            if (!card) {
-                card = document.createElement('div');
-                card.className = 'result-card hidden';
-                card.id = key+'-card';
-                card.innerHTML = `<h3 class="result-title">${title}</h3><div id="${key}" class="result-content"></div>`;
-                resultContainer.appendChild(card);
-            }
-            if (!contentElem) {
-                contentElem = document.createElement('div');
-                contentElem.id = key;
-                contentElem.className = 'result-content';
-                card.appendChild(contentElem);
-            }
-            return { card, contentElem };
+            document.getElementById('lang-vi').classList.toggle('bg-white/20', lang === 'vi');
+            document.getElementById('lang-en').classList.toggle('bg-white/20', lang === 'en');
+            updateUIText();
         }
 
-        // Remove all local calculation and suggestion logic
+        function updateUIText() {
+            const t = translations[currentLang];
+            document.getElementById('submit-text').textContent = t.analyze;
+            document.getElementById('dob').setAttribute('placeholder', t.dobLabel);
+        }
 
+        function setQuickDate(date) {
+            document.getElementById('dob').value = date;
+        }
+
+        // 📱 2. Progressive Disclosure - Show cards gradually
+        function showCard(cardId, content) {
+            const card = document.getElementById(cardId);
+            const contentDiv = card.querySelector('div[id$="-content"], div[id$="-info"]');
+            
+            if (contentDiv && content) {
+                contentDiv.innerHTML = markdownToHtml(content);
+                card.classList.add('show');
+            }
+        }
+
+        // 🎯 3. Interactive Elements - Voice input
+        function startVoiceInput() {
+            const voiceBtn = document.querySelector('.voice-btn');
+            voiceBtn.classList.add('recording');
+            
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = currentLang === 'vi' ? 'vi-VN' : 'en-US';
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    // Convert speech to date (simplified)
+                    console.log('Voice input:', transcript);
+                    voiceBtn.classList.remove('recording');
+                };
+                
+                recognition.onerror = () => {
+                    voiceBtn.classList.remove('recording');
+                };
+                
+                recognition.start();
+            } else {
+                alert('Voice input not supported in this browser');
+                voiceBtn.classList.remove('recording');
+            }
+        }
+
+        // 💬 4. Conversational UI - Streaming response
         async function processDOB() {
             const dob = document.getElementById('dob').value;
-            const resultDiv = document.getElementById('result');
             const submitBtn = document.getElementById('submit');
-            const dobError = document.getElementById('dob-error');
-            const spinner = document.getElementById('spinner');
-            const tryAnotherBtn = document.getElementById('try-another');
-            const gridContainer = resultDiv.querySelector('.grid');
-            let aiResponseContainer = document.getElementById('ai-response-container');
-            if (!aiResponseContainer) {
-                aiResponseContainer = document.createElement('div');
-                aiResponseContainer.id = 'ai-response-container';
-                aiResponseContainer.className = 'markdown-content bg-blue-50 p-6 rounded-xl shadow mb-6';
-                aiResponseContainer.innerHTML = '<h3 class="text-lg font-bold mb-4 text-blue-700">🤖 AI Analysis</h3><div id="streaming-content"></div>';
-                gridContainer.parentNode.insertBefore(aiResponseContainer, gridContainer);
-            }
-            // Reset UI state before processing
-            resultDiv.classList.add('hidden');
-            resultDiv.classList.remove('fade-in');
-            ['basic-info','personality-traits','life-cycle','interesting-facts','shopping-suggestions'].forEach(id => {
-                const elem = document.getElementById(id);
-                if (elem) elem.innerHTML = '';
-                const card = document.getElementById(id+'-card');
-                if (card) card.classList.add('hidden');
-            });
-            tryAnotherBtn.style.display = 'none';
-            spinner.style.display = 'none';
-            dobError.style.display = 'none';
-            ['btn-personality','btn-life-cycle','btn-interesting'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.classList.add('hidden');
-            });
-            document.getElementById('progress-bar-container').classList.add('hidden');
-            document.getElementById('progress-bar').style.width = '0%';
-            document.getElementById('card-buttons').classList.add('hidden');
-            aiResponseContainer.style.display = 'none';
-            gridContainer.style.display = '';
-
+            const resultsDiv = document.getElementById('results');
+            const errorDiv = document.getElementById('dob-error');
+            
+            // Reset UI
+            errorDiv.classList.add('hidden');
+            resultsDiv.classList.add('hidden');
+            
             if (!dob) {
-                dobError.textContent = 'Please enter a valid date of birth.';
-                dobError.style.display = 'block';
-                return;
-            }
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-                dobError.textContent = 'Vui lòng chọn ngày sinh hợp lệ (yyyy-mm-dd)';
-                dobError.style.display = 'block';
+                errorDiv.textContent = translations[currentLang].invalidDate;
+                errorDiv.classList.remove('hidden');
                 return;
             }
 
+            // Start processing
+            isProcessing = true;
             submitBtn.disabled = true;
-            spinner.style.display = 'flex';
+            document.getElementById('loading-spinner').classList.remove('hidden');
+            document.getElementById('submit-text').textContent = translations[currentLang].analyzing;
 
             try {
-                // Show result container and AI status
-                resultDiv.classList.remove('hidden');
-                resultDiv.classList.add('fade-in');
-                document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'AI đang phân tích...' : 'AI is analyzing...';
-                document.getElementById('ai-dots').style.display = 'inline-block';
-                // Đặt sectionTitles ở đầu hàm processDOB để dùng ở mọi nơi
-                const sectionTitles = {
-                    'basic-info': currentLang === 'vi' ? 'Thông tin cơ bản' : 'Basic Information',
-                    'personality-traits': currentLang === 'vi' ? 'Tính cách & Cung hoàng đạo' : 'Personality Traits & Zodiac',
-                    'life-cycle': currentLang === 'vi' ? 'Chu kỳ cuộc sống' : 'Life Cycle',
-                    'interesting-facts': currentLang === 'vi' ? 'Sự thật thú vị' : 'Interesting Facts',
-                    'shopping-suggestions': currentLang === 'vi' ? 'Gợi ý mua sắm' : 'Shopping Suggestions'
-                };
-                // Show preview container, hide grid
-                aiResponseContainer.style.display = 'block';
-                gridContainer.style.display = 'none';
-                const streamingContent = document.getElementById('streaming-content');
-                // Call backend API for streaming AI response
-                const es = new EventSource(`/api/process-dob?dob=${dob}&lang=${currentLang}`);
-                let accumulatedText = '';
-                let sectionContents = {
-                    'basic-info': '',
-                    'personality-traits': '',
-                    'life-cycle': '',
-                    'interesting-facts': '',
-                    'shopping-suggestions': ''
-                };
-                window._streamBuffer = '';
-                es.onmessage = (e) => {
+                // Show results container
+                resultsDiv.classList.remove('hidden');
+                document.getElementById('ai-status').textContent = translations[currentLang].aiStatus;
+                
+                // Start streaming
+                eventSource = new EventSource(`/api/process-dob?dob=${dob}&lang=${currentLang}`);
+                
+                eventSource.onmessage = (event) => {
                     try {
-                        const data = JSON.parse(e.data);
-                        if (data.error) throw new Error(data.error);
+                        const data = JSON.parse(event.data);
+                        
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
                         if (data.end) {
-                            if (window._streamBuffer) {
-                                accumulatedText += window._streamBuffer;
-                                window._streamBuffer = '';
-                            }
-                            aiResponseContainer.style.display = 'none';
-                            gridContainer.style.display = '';
-                            // Tách section linh hoạt hơn: chấp nhận tiêu đề có số thứ tự, mapping bằng includes
-                            let sectionMatches = [...accumulatedText.matchAll(/##\s*\d*\.?\s*([^\n:]+)(:)?\s*([^\n]*)\n([\s\S]*?)(?=\n##|$)/g)];
-                            if (sectionMatches.length > 0) {
-                                sectionMatches.forEach(m => {
-                                    let section = m[1].trim().toLowerCase();
-                                    let content = (m[3] ? m[3] + '\n' : '') + m[4].trim();
-                                    if (section.includes('thông tin cơ bản') || section.includes('basic information')) sectionContents['basic-info'] = content;
-                                    else if (section.includes('tính cách') || section.includes('personality') || section.includes('cung hoàng đạo') || section.includes('zodiac')) sectionContents['personality-traits'] = content;
-                                    else if (section.includes('chu kỳ') || section.includes('life cycle')) sectionContents['life-cycle'] = content;
-                                    else if (section.includes('sự thật') || section.includes('interesting')) sectionContents['interesting-facts'] = content;
-                                    else if (section.includes('gợi ý') || section.includes('shopping')) sectionContents['shopping-suggestions'] = content;
-                                });
-                            } else {
-                                sectionContents['basic-info'] = accumulatedText;
-                            }
-                            Object.entries(sectionContents).forEach(([key, val]) => {
-                                const contentElem = document.getElementById(key);
-                                const card = document.getElementById(key+'-card');
-                                if (val && contentElem && card) {
-                                    contentElem.innerHTML = enhanceContent(markdownToHtml(val));
-                                    card.classList.remove('hidden');
-                                    card.classList.add('show');
-                                } else if (card) {
-                                    card.classList.add('hidden');
-                                    card.classList.remove('show');
-                                }
-                            });
-                            document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'Phân tích hoàn tất!' : 'Analysis complete!';
-                            document.getElementById('ai-dots').style.display = 'none';
-                            tryAnotherBtn.style.display = 'block';
-                            es.close();
+                            finishAnalysis();
                             return;
                         }
+                        
                         if (data.chunk) {
-                            window._streamBuffer += data.chunk;
-                            // Log từng chunk để debug
-                            console.log('chunk:', data.chunk);
-                            let shouldRender = false;
-                            if (window._streamBuffer.includes('\n')) {
-                                shouldRender = true;
-                            } else if (window._streamBuffer.length > 10) {
-                                shouldRender = true;
-                            }
-                            if (shouldRender) {
-                                accumulatedText += window._streamBuffer;
-                                window._streamBuffer = '';
-                                // Log accumulatedText và markdownToHtml để debug
-                                console.log('accumulatedText:', accumulatedText);
-                                console.log('html:', markdownToHtml(accumulatedText));
-                                // Preview vào card Basic Information để user thấy sớm
-                                const previewElem = document.getElementById('basic-info');
-                                const previewCard = document.getElementById('basic-info-card');
-                                if (previewElem && previewCard) {
-                                    previewElem.innerHTML = enhanceContent(markdownToHtml(accumulatedText));
-                                    previewCard.classList.remove('hidden');
-                                    previewCard.classList.add('show');
-                                }
-                                if (streamingContent) {
-                                    streamingContent.innerHTML = enhanceContent(markdownToHtml(accumulatedText));
-                                }
-                            }
+                            // 🚀 Streaming response with smooth animation
+                            accumulatedText += data.chunk;
+                            updateStreamingContent(accumulatedText);
                         }
-                    } catch (err) {
-                        console.log('Parsing chunk:', err.message);
+                    } catch (error) {
+                        console.error('Streaming error:', error);
+                        handleError(error.message);
                     }
                 };
-                es.onerror = (e) => {
-                    console.error('SSE error', e);
-                    es.close();
+                
+                eventSource.onerror = (error) => {
+                    console.error('SSE error:', error);
+                    handleError(translations[currentLang].error);
                 };
+                
             } catch (error) {
-                console.error('Error:', error);
-                dobError.textContent = currentLang === 'vi' ? 'Lỗi kết nối máy chủ.' : 'Error connecting to server.';
-                dobError.style.display = 'block';
-                document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'Có lỗi xảy ra' : 'An error occurred';
-                document.getElementById('ai-dots').style.display = 'none';
-            } finally {
-                submitBtn.disabled = false;
-                spinner.style.display = 'none';
+                handleError(error.message);
             }
         }
-        document.getElementById('submit').addEventListener('click', processDOB);
-        document.getElementById('dob').max = (new Date()).toISOString().slice(0, 10);
-        document.getElementById('try-another').addEventListener('click', () => {
-            document.getElementById('dob').value = '';
-            document.getElementById('result').classList.add('hidden');
-            document.getElementById('dob-error').style.display = 'none';
+
+        function updateStreamingContent(text) {
+            const contentDiv = document.getElementById('streaming-content');
+            contentDiv.innerHTML = markdownToHtml(text);
+            
+            // Auto-scroll to bottom
+            contentDiv.scrollTop = contentDiv.scrollHeight;
+        }
+
+        function finishAnalysis() {
+            // Show detailed cards
+            document.getElementById('analysis-cards').classList.remove('hidden');
+            
+            // Parse and display sections
+            const sections = parseAnalysisSections(accumulatedText);
+            
+            Object.entries(sections).forEach(([key, content]) => {
+                if (content) {
+                    showCard(`${key}-card`, content);
+                }
+            });
+            
+            // Update UI
+            document.getElementById('ai-status').textContent = translations[currentLang].complete;
+            document.getElementById('feedback-section').classList.add('show');
+            
+            // Close connection
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            resetProcessingState();
+        }
+
+        function parseAnalysisSections(text) {
+            const sections = {
+                'basic-info': '',
+                'personality': '',
+                'life-cycle': '',
+                'facts': '',
+                'shopping': ''
+            };
+            
+            // Simple section parsing (can be improved)
+            const sectionMatches = text.match(/##\s*([^#\n]+)\n([\s\S]*?)(?=\n##|$)/g);
+            
+            if (sectionMatches) {
+                sectionMatches.forEach(match => {
+                    const lines = match.split('\n');
+                    const title = lines[0].replace('##', '').trim().toLowerCase();
+                    const content = lines.slice(1).join('\n').trim();
+                    
+                    if (title.includes('basic') || title.includes('thông tin')) {
+                        sections['basic-info'] = content;
+                    } else if (title.includes('personality') || title.includes('tính cách')) {
+                        sections['personality'] = content;
+                    } else if (title.includes('life') || title.includes('chu kỳ')) {
+                        sections['life-cycle'] = content;
+                    } else if (title.includes('fact') || title.includes('thật')) {
+                        sections['facts'] = content;
+                    } else if (title.includes('shopping') || title.includes('gợi ý')) {
+                        sections['shopping'] = content;
+                    }
+                });
+            } else {
+                sections['basic-info'] = text;
+            }
+            
+            return sections;
+        }
+
+        function handleError(message) {
+            document.getElementById('ai-status').textContent = message;
+            document.getElementById('streaming-content').innerHTML = `<div class="text-red-500">${message}</div>`;
+            resetProcessingState();
+        }
+
+        function resetProcessingState() {
+            isProcessing = false;
             document.getElementById('submit').disabled = false;
-            // Reset lại UI: show grid, ẩn preview, clear nội dung các card
-            const resultDiv = document.getElementById('result');
-            const gridContainer = resultDiv.querySelector('.grid');
-            let aiResponseContainer = document.getElementById('ai-response-container');
-            if (aiResponseContainer) aiResponseContainer.style.display = 'none';
-            if (gridContainer) gridContainer.style.display = '';
-            ['basic-info','personality-traits','life-cycle','interesting-facts','shopping-suggestions'].forEach(id => {
-                const elem = document.getElementById(id);
-                if (elem) elem.innerHTML = '';
-                const card = document.getElementById(id+'-card');
-                if (card) card.classList.add('hidden');
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('submit-text').textContent = translations[currentLang].analyze;
+        }
+
+                 // 🔄 5. Feedback Mechanisms
+         async function submitFeedback(type) {
+             const feedbackData = {
+                 type: type,
+                 timestamp: new Date().toISOString(),
+                 language: currentLang,
+                 userAgent: navigator.userAgent
+             };
+             
+             try {
+                 const response = await fetch('/api/feedback', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json'
+                     },
+                     body: JSON.stringify(feedbackData)
+                 });
+                 
+                 if (response.ok) {
+                     const feedbackSection = document.getElementById('feedback-section');
+                     feedbackSection.innerHTML = '<div class="text-green-500">Thank you for your feedback! 🙏</div>';
+                 } else {
+                     console.error('Feedback submission failed');
+                 }
+             } catch (error) {
+                 console.error('Feedback error:', error);
+             }
+         }
+
+        // 🔮 6. Predictive UX - Smart actions
+        function shareResults() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My AI DOB Analysis',
+                    text: 'Check out my personalized birth date analysis!',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('dob').value = '';
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('analysis-cards').classList.add('hidden');
+            document.getElementById('feedback-section').classList.remove('show');
+            
+            // Reset all cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('show');
+            });
+            
+            // Reset accumulated text
+            accumulatedText = '';
+            
+            // Close any open connection
+            if (eventSource) {
+                eventSource.close();
+            }
+        }
+
+        // Markdown to HTML conversion
+        function markdownToHtml(markdown) {
+            marked.setOptions({ 
+                breaks: true, 
+                gfm: true,
+                sanitize: false
+            });
+            return marked.parse(markdown);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUIText();
+            
+            // Enter key support
+            document.getElementById('dob').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !isProcessing) {
+                    processDOB();
+                }
             });
         });
-
-        // Đảm bảo luôn có #ai-result-container trong DOM trước khi render kết quả
-        let aiResultContainer = document.getElementById('ai-result-container');
-        if (!aiResultContainer) {
-            aiResultContainer = document.createElement('div');
-            aiResultContainer.id = 'ai-result-container';
-            aiResultContainer.className = 'ai-result-container';
-            // Chèn sau form nhập ngày sinh
-            const form = document.querySelector('.dob-form') || document.querySelector('form');
-            if (form && form.parentNode) {
-                form.parentNode.insertBefore(aiResultContainer, form.nextSibling);
-            } else {
-                document.body.appendChild(aiResultContainer);
-            }
-        }
     </script>
 </body>
 </html>

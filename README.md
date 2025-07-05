@@ -1,161 +1,250 @@
-# AI-Powered Date of Birth Insights with Streaming
+# AI DOB Streaming App
 
-A modern web application that provides comprehensive personal insights based on your date of birth using AI streaming technology.
+AI-powered Date of Birth analysis with streaming responses, built with TypeScript, Express, and modern best practices.
 
-## Features
+## 🚀 Quick Start
 
-- **Real-time AI Streaming**: Get insights as they're generated, not after completion
-- **Multi-language Support**: English and Vietnamese
-- **AI Provider Flexibility**: Support for both Gemini API and LM Studio
-- **Comprehensive Analysis**: Age, zodiac, numerology, life stages, milestones, and shopping suggestions
-- **Modern UI/UX**: Beautiful, responsive design with smooth animations
-- **Fallback Support**: Local calculations when AI services are unavailable
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
-## Quick Start
+### Installation
 
-### 1. Install Dependencies
+1. **Clone and install dependencies:**
 ```bash
 npm install
 ```
 
-### 2. Start the Server
-
-**Option A: Use Gemini API (Recommended)**
+2. **Set up environment variables:**
 ```bash
-# Set your Gemini API key
-export GEMINI_API_KEY="your_gemini_api_key_here"
-
-# Start the server
-npm start
+cp env.example .env
 ```
 
-**Quick Setup with Script:**
-```bash
-# Run the setup script to check configuration
-./setup-gemini.sh
+Edit `.env` file:
+```env
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# AI Provider Configuration
+USE_GEMINI=0  # 0 for LM Studio, 1 for Gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# LM Studio Configuration
+LM_STUDIO_URL=http://localhost:1234
+LM_MODEL=local-model
 ```
 
-**Option B: Use LM Studio (Local AI)**
+3. **Start the service:**
+
+**Development mode (with auto-reload):**
 ```bash
-# Start LM Studio first on localhost:1234
-# Then start the server in LM Studio mode
 npm run dev
 ```
 
-**Option C: Local Fallback Only**
+**Production mode:**
 ```bash
-# Start without any AI provider (uses local calculations)
 npm start
 ```
 
-### 3. Open the Application
-Visit `http://localhost:3000` in your browser.
+**Build TypeScript:**
+```bash
+npm run build
+```
 
-## Configuration
+## 📁 Project Structure
 
-### Environment Variables
+```
+├── src/
+│   ├── types/user.ts           # TypeScript interfaces
+│   ├── services/
+│   │   ├── DOBAnalyzer.ts     # Business logic
+│   │   └── AIProvider.ts      # AI abstraction
+│   ├── utils/
+│   │   └── promptBuilder.ts   # Prompt utilities
+│   ├── api/
+│   │   └── process-dob.ts     # API handler
+│   └── components/
+│       ├── DOBForm.tsx        # Form component
+│       └── DOBResults.tsx     # Results display
+├── server.js                   # Express server
+├── index.html                  # Frontend
+├── package.json               # Dependencies
+├── tsconfig.json              # TypeScript config
+└── .env                       # Environment variables
+```
 
-- `GEMINI_API_KEY`: Your Google Gemini API key (required for Gemini mode)
-- `LM_DEV_MODE`: Set to `true` to use LM Studio instead of Gemini
-- `PORT`: Server port (default: 3000)
+## 🔧 Configuration
 
 ### AI Providers
 
-**Gemini API (Default)**
-- Requires valid API key
-- Supports real streaming
-- More comprehensive AI analysis
+**LM Studio (Default):**
+- Set `USE_GEMINI=0`
+- Configure `LM_STUDIO_URL` and `LM_MODEL`
+- Start LM Studio locally
 
-**LM Studio (Local)**
-- Requires LM Studio running on `localhost:1234`
-- Simulated streaming (word-by-word)
-- Good for development and privacy
+**Gemini:**
+- Set `USE_GEMINI=1`
+- Add your `GEMINI_API_KEY`
+- No local setup required
 
-**Local Fallback**
-- No AI required
-- Instant response
-- Basic calculations only
+### Environment Variables
 
-## Usage
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | 3000 |
+| `NODE_ENV` | Environment | development |
+| `USE_GEMINI` | AI provider | 0 (LM Studio) |
+| `GEMINI_API_KEY` | Gemini API key | - |
+| `LM_STUDIO_URL` | LM Studio URL | http://localhost:1234 |
+| `LM_MODEL` | LM Studio model | local-model |
 
-1. **Enter your date of birth** in the input field
-2. **Click "Get My Insights"** to start the analysis
-3. **Watch the AI stream** the response in real-time
-4. **View comprehensive insights** including:
-   - Basic information (age, zodiac, life stage)
-   - Personality traits based on zodiac and numerology
-   - Life cycle analysis and milestones
-   - Interesting facts and historical events
-   - Personalized shopping suggestions
+## 🛠️ Development
 
-## Technical Architecture
+### Available Scripts
 
-### Backend (`api/process-dob.js`)
-- **SOLID Principles**: Service classes for business logic
-- **Strategy Pattern**: AI provider abstraction
-- **Streaming Support**: Real-time response streaming
-- **Error Handling**: Graceful fallbacks and error recovery
-
-### Frontend (`index.html`)
-- **Modern UI**: Tailwind CSS with custom animations
-- **Streaming Display**: Real-time text rendering with markdown support
-- **Responsive Design**: Works on all device sizes
-- **Progressive Enhancement**: Graceful degradation for older browsers
-
-## API Endpoints
-
-### GET `/api/process-dob`
-**Parameters:**
-- `dob`: Date of birth (YYYY-MM-DD format)
-- `lang`: Language (`en` or `vi`)
-
-**Response:** Server-Sent Events (SSE) stream with JSON chunks:
-```json
-{"chunk": "text content"}
-{"end": true}
+```bash
+npm run dev          # Start development server
+npm start           # Start production server
+npm run build       # Build TypeScript
+npm test            # Run tests
+npm run lint        # Lint code
+npm run type-check  # TypeScript type checking
 ```
 
-## Troubleshooting
+### API Endpoints
+
+- `GET /` - Main application
+- `GET /api/process-dob` - DOB analysis (SSE streaming)
+- `GET /api/health` - Health check
+
+### Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- UserProfile.test.tsx
+```
+
+## 🏗️ Architecture
+
+### SOLID Principles
+- **Single Responsibility**: Each class has one purpose
+- **Open/Closed**: Extensible without modification
+- **Liskov Substitution**: AI providers are interchangeable
+- **Interface Segregation**: Clean interfaces
+- **Dependency Inversion**: Depend on abstractions
+
+### Design Patterns
+- **Factory Pattern**: AI provider creation
+- **Strategy Pattern**: Different AI providers
+- **Observer Pattern**: Event streaming
+- **Builder Pattern**: Prompt construction
+
+### Error Handling
+- Comprehensive error catching
+- Graceful fallbacks
+- User-friendly error messages
+- Proper logging
+
+## 🔒 Security
+
+- Helmet.js for security headers
+- CORS configuration
+- Input validation
+- Rate limiting ready
+- Environment variable protection
+
+## 📊 Monitoring
+
+- Morgan logging
+- Health check endpoint
+- Error tracking
+- Performance monitoring ready
+
+## 🚀 Deployment
+
+### Local Development
+```bash
+npm run dev
+```
+
+### Production
+```bash
+npm run build
+npm start
+```
+
+### Docker (Optional)
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-**"Cannot connect to server"**
-- Ensure the server is running on port 3000
-- Check if the port is available
+1. **Port already in use:**
+```bash
+# Change port in .env
+PORT=3001
+```
 
-**"Invalid date format"**
-- Use YYYY-MM-DD format (e.g., 1990-01-01)
-- Ensure the date is valid
+2. **LM Studio not running:**
+```bash
+# Start LM Studio or use Gemini
+USE_GEMINI=1
+```
 
-**"AI service unavailable"**
-- Check your API key (for Gemini)
-- Ensure LM Studio is running (for local AI)
-- The app will fall back to local calculations
+3. **TypeScript errors:**
+```bash
+npm run type-check
+npm run build
+```
 
-**"Streaming not working"**
-- Check browser console for errors
-- Ensure your browser supports Server-Sent Events
-- Try refreshing the page
+4. **Missing dependencies:**
+```bash
+npm install
+```
 
-### Development Mode
+### Logs
 
-For development with LM Studio:
-1. Start LM Studio and load a model
-2. Set the API endpoint to `http://localhost:1234`
-3. Run `npm run dev`
-4. The app will use LM Studio for AI responses
+Check server logs for:
+- API requests
+- Error messages
+- AI provider status
+- Performance metrics
 
-## Contributing
+## 📈 Performance
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- Streaming responses
+- Compression enabled
+- Efficient state management
+- Memory leak prevention
+- Graceful shutdown
 
-## License
+## 🤝 Contributing
 
-ISC License - see package.json for details.
+1. Follow TypeScript best practices
+2. Add tests for new features
+3. Update documentation
+4. Use conventional commits
+5. Follow Cursor rules
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
 
 ```curl -H "Content-Type: application/json" -d '{"contents":[{"parts":[{"text":"Test"}]}]}' "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=$GEMINI_API_KEY"
 
