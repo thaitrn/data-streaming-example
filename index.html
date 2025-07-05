@@ -94,6 +94,16 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* Force show for debug/fix */
+        #basic-info, .markdown-content {
+            color: #222 !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        #basic-info-card {
+            opacity: 1 !important;
+            display: block !important;
+        }
         /* Responsive tweaks */
         @media (max-width: 640px) {
             h1 { font-size: 2rem; }
@@ -232,100 +242,47 @@
             document.getElementById('title').textContent = LANGS[lang].title;
             document.getElementById('dob-label').textContent = LANGS[lang].dobLabel;
             document.getElementById('submit').textContent = isProcessing ? LANGS[lang].processing : LANGS[lang].process;
-            // document.getElementById('lang-vi').className = lang === 'vi' ? 
-            //     'px-3 py-1 mr-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
-            //     'px-3 py-1 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
-            // document.getElementById('lang-en').className = lang === 'en' ? 
-            //     'px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors' : 
-            //     'px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors';
-            
-            // Update placeholder if it's visible
             const placeholder = document.getElementById('placeholder');
             if (placeholder && placeholder.style.display !== 'none') {
                 placeholder.querySelector('p').textContent = LANGS[lang].placeholder;
             }
         };
-        
-        // document.getElementById('lang-vi').onclick = () => setLang('vi');
-        // document.getElementById('lang-en').onclick = () => setLang('en');
         setLang(currentLang);
 
         // Function to convert markdown to HTML
         function markdownToHtml(markdown) {
-            // Configure marked options
-            marked.setOptions({
-                breaks: true,
-                gfm: true
-            });
-            
+            marked.setOptions({ breaks: true, gfm: true });
             return marked.parse(markdown);
         }
+        function enhanceContent(html) { return html; } // No emoji enhancement, keep backend formatting
 
-        // Function to add emoji icons for better visual appeal
-        function enhanceContent(html) {
-            return html
-                .replace(/<strong>(Tuổi|Age):<\/strong>/g, '⏳ <strong>$1:</strong>')
-                .replace(/<strong>(Cung hoàng đạo|Zodiac Sign):<\/strong>/g, '⭐ <strong>$1:</strong>')
-                .replace(/<strong>(Nhận xét tính cách|Personality Insight):<\/strong>/g, '😊 <strong>$1:</strong>')
-                .replace(/<strong>(Ngày sinh|Date of Birth):<\/strong>/g, '📅 <strong>$1:</strong>')
-                .replace(/<strong>(Phân tích|Analysis):<\/strong>/g, '🔍 <strong>$1:</strong>')
-                .replace(/<strong>(Tính cách|Personality):<\/strong>/g, '🎭 <strong>$1:</strong>');
+        // Helper: Đảm bảo card và content luôn tồn tại
+        function ensureCardAndContent(key, title) {
+            let card = document.getElementById(key+'-card');
+            let contentElem = document.getElementById(key);
+            const resultContainer = document.getElementById('ai-result-container');
+            if (!resultContainer) {
+                console.warn('Không tìm thấy #ai-result-container trong DOM!');
+                return { card: null, contentElem: null };
+            }
+            if (!card) {
+                card = document.createElement('div');
+                card.className = 'result-card hidden';
+                card.id = key+'-card';
+                card.innerHTML = `<h3 class="result-title">${title}</h3><div id="${key}" class="result-content"></div>`;
+                resultContainer.appendChild(card);
+            }
+            if (!contentElem) {
+                contentElem = document.createElement('div');
+                contentElem.id = key;
+                contentElem.className = 'result-content';
+                card.appendChild(contentElem);
+            }
+            return { card, contentElem };
         }
 
-        // Thêm biến để quản lý auto open
-        let autoOpenTimeouts = [];
-        let autoOpenStopped = false;
+        // Remove all local calculation and suggestion logic
 
-        // Hàm mở card thủ công và dừng auto open
-        function manualOpenCard(cardId) {
-            autoOpenStopped = true;
-            clearAutoOpenTimeouts();
-            document.getElementById('ai-status').style.display = 'none';
-            const card = document.getElementById(cardId);
-            card.classList.remove('hidden');
-            setTimeout(() => card.classList.add('show'), 10);
-        }
-        function clearAutoOpenTimeouts() {
-            autoOpenTimeouts.forEach(t => clearTimeout(t));
-            autoOpenTimeouts = [];
-        }
-
-        // Gợi ý vật phẩm phong thuỷ chỉ render khi user click
-        function manualOpenShoppingCard() {
-            autoOpenStopped = true;
-            clearAutoOpenTimeouts();
-            const card = document.getElementById('shopping-suggestions-card');
-            card.classList.remove('hidden');
-            setTimeout(() => card.classList.add('show'), 10);
-            // Sinh nội dung khi click
-            const zodiac = window.lastZodiac;
-            const age = window.lastAge;
-            const shoppingSuggestionsMap = {
-                'Aries': ['Đá ruby', 'Vật phẩm màu đỏ', 'Đồng hồ thể thao'],
-                'Taurus': ['Đá thạch anh hồng', 'Cây xanh nhỏ', 'Đồ trang trí gốm'],
-                'Gemini': ['Sách', 'Bút ký', 'Phụ kiện đa năng'],
-                'Cancer': ['Đá mặt trăng', 'Khung ảnh gia đình', 'Nến thơm'],
-                'Leo': ['Đá mắt hổ', 'Trang sức vàng', 'Đồ decor sang trọng'],
-                'Virgo': ['Đá ngọc lục bảo', 'Sổ tay', 'Cây để bàn'],
-                'Libra': ['Đá thạch anh tím', 'Nước hoa', 'Tranh nghệ thuật'],
-                'Scorpio': ['Đá obsidian', 'Vòng tay phong thuỷ', 'Nước hoa bí ẩn'],
-                'Sagittarius': ['Đá ngọc lam', 'Balo du lịch', 'Sách khám phá'],
-                'Capricorn': ['Đá mã não', 'Đồng hồ', 'Vật phẩm màu nâu/xám'],
-                'Aquarius': ['Đá sapphire', 'Đồ công nghệ', 'Phụ kiện độc lạ'],
-                'Pisces': ['Đá aquamarine', 'Đèn ngủ', 'Đồ decor biển']
-            };
-            const shoppingList = shoppingSuggestionsMap[zodiac] || ['Vật phẩm phong thuỷ hợp mệnh', 'Đồ trang trí mang lại may mắn'];
-            let shoppingText = `**Gợi ý cho ${zodiac}:**\n`;
-            shoppingList.forEach(item => { shoppingText += `- ${item}\n`; });
-            if (age && age.years < 13) shoppingText += '- Đồ chơi giáo dục, sách tranh, vật phẩm an toàn cho trẻ nhỏ\n';
-            else if (age && age.years < 20) shoppingText += '- Sách phát triển bản thân, phụ kiện cá tính, đồ thể thao\n';
-            else if (age && age.years < 40) shoppingText += '- Đồ decor văn phòng, đồng hồ, vật phẩm phong thuỷ cho sự nghiệp\n';
-            else if (age && age.years < 60) shoppingText += '- Đồ chăm sóc sức khoẻ, cây cảnh, vật phẩm thư giãn\n';
-            else if (age) shoppingText += '- Đồ dưỡng sinh, vật phẩm an lạc, sách truyền cảm hứng\n';
-            document.getElementById('shopping-suggestions').innerHTML = enhanceContent(markdownToHtml(shoppingText));
-        }
-
-        // Add new functions for enhanced analysis
         async function processDOB() {
             const dob = document.getElementById('dob').value;
             const resultDiv = document.getElementById('result');
@@ -333,344 +290,207 @@
             const dobError = document.getElementById('dob-error');
             const spinner = document.getElementById('spinner');
             const tryAnotherBtn = document.getElementById('try-another');
-
+            const gridContainer = resultDiv.querySelector('.grid');
+            let aiResponseContainer = document.getElementById('ai-response-container');
+            if (!aiResponseContainer) {
+                aiResponseContainer = document.createElement('div');
+                aiResponseContainer.id = 'ai-response-container';
+                aiResponseContainer.className = 'markdown-content bg-blue-50 p-6 rounded-xl shadow mb-6';
+                aiResponseContainer.innerHTML = '<h3 class="text-lg font-bold mb-4 text-blue-700">🤖 AI Analysis</h3><div id="streaming-content"></div>';
+                gridContainer.parentNode.insertBefore(aiResponseContainer, gridContainer);
+            }
             // Reset UI state before processing
             resultDiv.classList.add('hidden');
             resultDiv.classList.remove('fade-in');
-            document.getElementById('basic-info').innerHTML = '';
-            document.getElementById('personality-traits').innerHTML = '';
-            document.getElementById('life-cycle').innerHTML = '';
-            document.getElementById('interesting-facts').innerHTML = '';
+            ['basic-info','personality-traits','life-cycle','interesting-facts','shopping-suggestions'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.innerHTML = '';
+                const card = document.getElementById(id+'-card');
+                if (card) card.classList.add('hidden');
+            });
             tryAnotherBtn.style.display = 'none';
             spinner.style.display = 'none';
             dobError.style.display = 'none';
-            // Ẩn tất cả các card và nút khi bắt đầu
-            document.getElementById('basic-info-card').classList.add('hidden');
-            document.getElementById('personality-traits-card').classList.add('hidden');
-            document.getElementById('life-cycle-card').classList.add('hidden');
-            document.getElementById('interesting-facts-card').classList.add('hidden');
-            document.getElementById('btn-personality').classList.add('hidden');
-            document.getElementById('btn-life-cycle').classList.add('hidden');
-            document.getElementById('btn-interesting').classList.add('hidden');
-            // Ẩn progress bar khi bắt đầu
+            ['btn-personality','btn-life-cycle','btn-interesting'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.add('hidden');
+            });
             document.getElementById('progress-bar-container').classList.add('hidden');
             document.getElementById('progress-bar').style.width = '0%';
-            // Ẩn các nút chọn card và reset auto open
             document.getElementById('card-buttons').classList.add('hidden');
-            autoOpenStopped = false;
-            clearAutoOpenTimeouts();
+            aiResponseContainer.style.display = 'none';
+            gridContainer.style.display = '';
 
             if (!dob) {
                 dobError.textContent = 'Please enter a valid date of birth.';
                 dobError.style.display = 'block';
                 return;
             }
-
-            // Kiểm tra định dạng yyyy-mm-dd
             if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
                 dobError.textContent = 'Vui lòng chọn ngày sinh hợp lệ (yyyy-mm-dd)';
                 dobError.style.display = 'block';
                 return;
             }
 
-            console.log('[Step 1] User submitted DOB:', dob);
             submitBtn.disabled = true;
             spinner.style.display = 'flex';
-            setTimeout(() => {
-                resultDiv.classList.add('fade-in');
-                resultDiv.classList.remove('hidden');
-                // Hiện card Basic Info ngay lập tức
-                document.getElementById('basic-info-card').classList.remove('hidden');
-                setTimeout(() => document.getElementById('basic-info-card').classList.add('show'), 10);
-                // Ẩn spinner ngay khi đã có kết quả cơ bản
-                spinner.style.display = 'none';
-                // Chuyển hiệu ứng sang "AI đang đưa ra nhận xét..." trong 2s rồi ẩn
-                const aiStatus = document.getElementById('ai-status');
-                const aiStatusText = document.getElementById('ai-status-text');
-                const aiDots = document.getElementById('ai-dots');
-                aiStatusText.textContent = 'AI đang đưa ra nhận xét...';
-                aiDots.style.display = 'none';
-                setTimeout(() => { aiStatus.style.display = 'none'; }, 2000);
-                // Hiện thông báo và các nút chọn card
-                document.getElementById('card-buttons').classList.remove('hidden');
-                // Tự động mở từng card nếu user không chọn gì
-                autoOpenTimeouts.push(setTimeout(() => {
-                    if (!autoOpenStopped) document.getElementById('personality-traits-card').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('personality-traits-card').classList.add('show'), 10);
-                    autoOpenTimeouts.push(setTimeout(() => {
-                        if (!autoOpenStopped) document.getElementById('life-cycle-card').classList.remove('hidden');
-                        setTimeout(() => document.getElementById('life-cycle-card').classList.add('show'), 10);
-                        autoOpenTimeouts.push(setTimeout(() => {
-                            if (!autoOpenStopped) document.getElementById('interesting-facts-card').classList.remove('hidden');
-                            setTimeout(() => document.getElementById('interesting-facts-card').classList.add('show'), 10);
-                        }, 3000));
-                    }, 3000));
-                }, 3000));
-            }, 200);
-            tryAnotherBtn.style.display = 'block';
-            
+
             try {
-                console.log('[Step 2] Calculating age...');
-                const age = calculateAge(dob);
-                console.log('[Step 2] Age calculated:', age);
-
-                console.log('[Step 3] Determining zodiac sign...');
-                const zodiac = getZodiacSign(dob);
-                console.log('[Step 3] Zodiac sign:', zodiac);
-
-                console.log('[Step 4] Determining life stage...');
-                const lifeStage = getLifeStage(age.years);
-                console.log('[Step 4] Life stage:', lifeStage);
-
-                // Tính toán numerology trước khi dùng
-                const numerologyNum = getNumerology(dob);
-                const numerologyFact = getNumerologyFact(numerologyNum);
-
-                // Format the results
-                const basicInfo = `**Your Age:** ${age.years} years, ${age.months} months, and ${age.days} days\n` +
-                                 `**Zodiac Sign:** ${zodiac}\n` +
-                                 `**Life Stage:** ${lifeStage}`;
-
-                // Hoàn thiện nội dung Personality Traits
-                const zodiacTraits = {
-                    'Aries': 'Năng động, nhiệt huyết, thích thử thách, đôi khi nóng nảy.',
-                    'Taurus': 'Kiên định, thực tế, yêu cái đẹp, đôi khi bướng bỉnh.',
-                    'Gemini': 'Linh hoạt, giao tiếp tốt, tò mò, đôi khi thiếu kiên nhẫn.',
-                    'Cancer': 'Tình cảm, quan tâm, nhạy cảm, đôi khi dễ bị tổn thương.',
-                    'Leo': 'Tự tin, sáng tạo, hào phóng, đôi khi kiêu ngạo.',
-                    'Virgo': 'Tỉ mỉ, chăm chỉ, phân tích tốt, đôi khi cầu toàn.',
-                    'Libra': 'Công bằng, duyên dáng, yêu hòa bình, đôi khi do dự.',
-                    'Scorpio': 'Sâu sắc, quyết đoán, bí ẩn, đôi khi ghen tuông.',
-                    'Sagittarius': 'Lạc quan, thích tự do, ham học hỏi, đôi khi thiếu kiên nhẫn.',
-                    'Capricorn': 'Kỷ luật, trách nhiệm, tham vọng, đôi khi cứng nhắc.',
-                    'Aquarius': 'Sáng tạo, độc lập, nhân văn, đôi khi lập dị.',
-                    'Pisces': 'Nhạy cảm, giàu trí tưởng tượng, vị tha, đôi khi mơ mộng.'
+                // Show result container and AI status
+                resultDiv.classList.remove('hidden');
+                resultDiv.classList.add('fade-in');
+                document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'AI đang phân tích...' : 'AI is analyzing...';
+                document.getElementById('ai-dots').style.display = 'inline-block';
+                // Đặt sectionTitles ở đầu hàm processDOB để dùng ở mọi nơi
+                const sectionTitles = {
+                    'basic-info': currentLang === 'vi' ? 'Thông tin cơ bản' : 'Basic Information',
+                    'personality-traits': currentLang === 'vi' ? 'Tính cách & Cung hoàng đạo' : 'Personality Traits & Zodiac',
+                    'life-cycle': currentLang === 'vi' ? 'Chu kỳ cuộc sống' : 'Life Cycle',
+                    'interesting-facts': currentLang === 'vi' ? 'Sự thật thú vị' : 'Interesting Facts',
+                    'shopping-suggestions': currentLang === 'vi' ? 'Gợi ý mua sắm' : 'Shopping Suggestions'
                 };
-                const trait = zodiacTraits[zodiac] || '';
-                const personalityTraits =
-                    `**Zodiac:** ${zodiac}\n` +
-                    `**Key Traits:** ${trait}\n` +
-                    `**Numerology:** Số chủ đạo của bạn là ${numerologyNum} – ${numerologyFact}`;
-
-                // Hoàn thiện nội dung Life Cycle Analysis
-                function getLifeMilestones(age) {
-                    if (age < 13) return ['Khám phá bản thân', 'Học hỏi kỹ năng cơ bản', 'Tạo dựng nền tảng gia đình'];
-                    if (age < 20) return ['Phát triển cá tính', 'Tìm kiếm đam mê', 'Kết bạn và xây dựng các mối quan hệ'];
-                    if (age < 40) return ['Xây dựng sự nghiệp', 'Tìm kiếm sự ổn định', 'Phát triển bản thân'];
-                    if (age < 60) return ['Ổn định tài chính', 'Chia sẻ kinh nghiệm', 'Chăm sóc sức khỏe'];
-                    return ['Tận hưởng cuộc sống', 'Gắn kết gia đình', 'Truyền cảm hứng cho thế hệ sau'];
-                }
-                const milestones = getLifeMilestones(age.years);
-                const lifeCycle =
-                    `**Current Stage:** ${lifeStage}\n` +
-                    `**Major Milestones:**\n- ${milestones.join('\n- ')}`;
-
-                console.log('[Step 5] Generating interesting facts...');
-                const daysOld = Math.floor((new Date() - new Date(dob)) / (1000 * 60 * 60 * 24));
-                const famous = getFamousBirthdays(dob);
-                const event = getHistoricalEvent(dob, 10);
-                console.log('[Step 5] Days old:', daysOld);
-                console.log('[Step 5] Famous birthdays:', famous);
-                console.log('[Step 5] 10th birthday event:', event);
-
-                const interestingFacts = `You are approximately **${daysOld} days old**.\n` +
-                    `Famous people born on your date: ${famous}\n` +
-                    `On your 10th birthday, this happened: ${event}`;
-
-                // Update the display
-                document.getElementById('basic-info').innerHTML = enhanceContent(markdownToHtml(basicInfo));
-                document.getElementById('personality-traits').innerHTML = enhanceContent(markdownToHtml(personalityTraits));
-                document.getElementById('life-cycle').innerHTML = enhanceContent(markdownToHtml(lifeCycle));
-                document.getElementById('interesting-facts').innerHTML = enhanceContent(markdownToHtml(interestingFacts));
-                console.log('[Step 6] Display updated.');
-
-                // Gợi ý vật phẩm phong thuỷ
-                document.getElementById('shopping-suggestions-card').classList.add('hidden');
-                document.getElementById('btn-shopping').classList.add('hidden');
-                document.getElementById('shopping-suggestions').innerHTML = '';
-                document.getElementById('btn-shopping').classList.add('pulse-highlight');
-                setTimeout(() => {
-                    document.getElementById('btn-shopping').classList.remove('hidden');
-                    document.getElementById('btn-shopping').classList.add('pulse-highlight');
-                }, 9000);
-
-                // Lưu lại zodiac và age để dùng khi click
-                window.lastZodiac = zodiac;
-                window.lastAge = age;
-
+                // Show preview container, hide grid
+                aiResponseContainer.style.display = 'block';
+                gridContainer.style.display = 'none';
+                const streamingContent = document.getElementById('streaming-content');
+                // Call backend API for streaming AI response
+                const es = new EventSource(`/api/process-dob?dob=${dob}&lang=${currentLang}`);
+                let accumulatedText = '';
+                let sectionContents = {
+                    'basic-info': '',
+                    'personality-traits': '',
+                    'life-cycle': '',
+                    'interesting-facts': '',
+                    'shopping-suggestions': ''
+                };
+                window._streamBuffer = '';
+                es.onmessage = (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (data.error) throw new Error(data.error);
+                        if (data.end) {
+                            if (window._streamBuffer) {
+                                accumulatedText += window._streamBuffer;
+                                window._streamBuffer = '';
+                            }
+                            aiResponseContainer.style.display = 'none';
+                            gridContainer.style.display = '';
+                            // Tách section linh hoạt hơn: chấp nhận tiêu đề có số thứ tự, mapping bằng includes
+                            let sectionMatches = [...accumulatedText.matchAll(/##\s*\d*\.?\s*([^\n:]+)(:)?\s*([^\n]*)\n([\s\S]*?)(?=\n##|$)/g)];
+                            if (sectionMatches.length > 0) {
+                                sectionMatches.forEach(m => {
+                                    let section = m[1].trim().toLowerCase();
+                                    let content = (m[3] ? m[3] + '\n' : '') + m[4].trim();
+                                    if (section.includes('thông tin cơ bản') || section.includes('basic information')) sectionContents['basic-info'] = content;
+                                    else if (section.includes('tính cách') || section.includes('personality') || section.includes('cung hoàng đạo') || section.includes('zodiac')) sectionContents['personality-traits'] = content;
+                                    else if (section.includes('chu kỳ') || section.includes('life cycle')) sectionContents['life-cycle'] = content;
+                                    else if (section.includes('sự thật') || section.includes('interesting')) sectionContents['interesting-facts'] = content;
+                                    else if (section.includes('gợi ý') || section.includes('shopping')) sectionContents['shopping-suggestions'] = content;
+                                });
+                            } else {
+                                sectionContents['basic-info'] = accumulatedText;
+                            }
+                            Object.entries(sectionContents).forEach(([key, val]) => {
+                                const contentElem = document.getElementById(key);
+                                const card = document.getElementById(key+'-card');
+                                if (val && contentElem && card) {
+                                    contentElem.innerHTML = enhanceContent(markdownToHtml(val));
+                                    card.classList.remove('hidden');
+                                    card.classList.add('show');
+                                } else if (card) {
+                                    card.classList.add('hidden');
+                                    card.classList.remove('show');
+                                }
+                            });
+                            document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'Phân tích hoàn tất!' : 'Analysis complete!';
+                            document.getElementById('ai-dots').style.display = 'none';
+                            tryAnotherBtn.style.display = 'block';
+                            es.close();
+                            return;
+                        }
+                        if (data.chunk) {
+                            window._streamBuffer += data.chunk;
+                            // Log từng chunk để debug
+                            console.log('chunk:', data.chunk);
+                            let shouldRender = false;
+                            if (window._streamBuffer.includes('\n')) {
+                                shouldRender = true;
+                            } else if (window._streamBuffer.length > 10) {
+                                shouldRender = true;
+                            }
+                            if (shouldRender) {
+                                accumulatedText += window._streamBuffer;
+                                window._streamBuffer = '';
+                                // Log accumulatedText và markdownToHtml để debug
+                                console.log('accumulatedText:', accumulatedText);
+                                console.log('html:', markdownToHtml(accumulatedText));
+                                // Preview vào card Basic Information để user thấy sớm
+                                const previewElem = document.getElementById('basic-info');
+                                const previewCard = document.getElementById('basic-info-card');
+                                if (previewElem && previewCard) {
+                                    previewElem.innerHTML = enhanceContent(markdownToHtml(accumulatedText));
+                                    previewCard.classList.remove('hidden');
+                                    previewCard.classList.add('show');
+                                }
+                                if (streamingContent) {
+                                    streamingContent.innerHTML = enhanceContent(markdownToHtml(accumulatedText));
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Parsing chunk:', err.message);
+                    }
+                };
+                es.onerror = (e) => {
+                    console.error('SSE error', e);
+                    es.close();
+                };
             } catch (error) {
-                console.error('[Error] Processing DOB:', error);
-                spinner.style.display = 'none';
-                alert('Error processing your birth date. Please try again.');
+                console.error('Error:', error);
+                dobError.textContent = currentLang === 'vi' ? 'Lỗi kết nối máy chủ.' : 'Error connecting to server.';
+                dobError.style.display = 'block';
+                document.getElementById('ai-status-text').textContent = currentLang === 'vi' ? 'Có lỗi xảy ra' : 'An error occurred';
+                document.getElementById('ai-dots').style.display = 'none';
             } finally {
                 submitBtn.disabled = false;
                 spinner.style.display = 'none';
-                console.log('[Step 7] Processing complete.');
             }
         }
-
-        // Update event listener
         document.getElementById('submit').addEventListener('click', processDOB);
-
-        // Set max date for dob input to today (GMT+7)
-        function getTodayGmt7() {
-            const now = new Date();
-            const gmt7Offset = 7 * 60 * 60 * 1000;
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const gmt7 = new Date(utc + gmt7Offset);
-            return gmt7.toISOString().slice(0, 10);
-        }
-        document.getElementById('dob').max = getTodayGmt7();
-
-        // Add logs to helpers
-        function calculateAge(birthDate) {
-            console.log('[Helper] calculateAge called with:', birthDate);
-            const today = new Date();
-            const birth = new Date(birthDate);
-            let years = today.getFullYear() - birth.getFullYear();
-            let months = today.getMonth() - birth.getMonth();
-            let days = today.getDate() - birth.getDate();
-
-            if (days < 0) {
-                months--;
-                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-            }
-            if (months < 0) {
-                years--;
-                months += 12;
-            }
-            console.log('[Helper] calculateAge result:', { years, months, days });
-            return { years, months, days };
-        }
-        function getZodiacSign(birthDate) {
-            console.log('[Helper] getZodiacSign called with:', birthDate);
-            const date = parseInt(birthDate.split('-')[2]);
-            const month = parseInt(birthDate.split('-')[1]);
-            const signs = [
-                { name: 'Capricorn', dates: [22, 19] },
-                { name: 'Aquarius', dates: [20, 18] },
-                { name: 'Pisces', dates: [19, 20] },
-                { name: 'Aries', dates: [21, 19] },
-                { name: 'Taurus', dates: [20, 20] },
-                { name: 'Gemini', dates: [21, 20] },
-                { name: 'Cancer', dates: [21, 22] },
-                { name: 'Leo', dates: [23, 22] },
-                { name: 'Virgo', dates: [23, 22] },
-                { name: 'Libra', dates: [23, 22] },
-                { name: 'Scorpio', dates: [23, 21] },
-                { name: 'Sagittarius', dates: [22, 21] }
-            ];
-            const currentSign = signs[month - 1];
-            const result = date >= currentSign.dates[0] || date <= currentSign.dates[1] ? currentSign.name : signs[month % 12].name;
-            console.log('[Helper] getZodiacSign result:', result);
-            return result;
-        }
-        function getLifeStage(age) {
-            console.log('[Helper] getLifeStage called with:', age);
-            let stage = '';
-            if (age < 13) stage = 'Childhood';
-            else if (age < 20) stage = 'Adolescence';
-            else if (age < 40) stage = 'Young Adult';
-            else if (age < 60) stage = 'Middle Age';
-            else stage = 'Senior';
-            console.log('[Helper] getLifeStage result:', stage);
-            return stage;
-        }
-        function getFamousBirthdays(dob) {
-            console.log('[Helper] getFamousBirthdays called with:', dob);
-            const monthDay = dob.slice(5);
-            const famous = {
-                '01-01': 'Paul Revere, Verne Troyer',
-                '07-20': 'Alexander the Great, Gisele Bündchen',
-                '12-25': 'Isaac Newton, Justin Trudeau',
-                // ... add more as needed
-            };
-            const result = famous[monthDay] || 'No major celebrities found (try 01-01, 07-20, 12-25)';
-            console.log('[Helper] getFamousBirthdays result:', result);
-            return result;
-        }
-        function getHistoricalEvent(dob, yearsAfter) {
-            console.log('[Helper] getHistoricalEvent called with:', dob, yearsAfter);
-            const year = parseInt(dob.slice(0, 4)) + yearsAfter;
-            const events = {
-                2000: 'Y2K bug was a big topic!',
-                2010: 'Instagram was launched.',
-                2020: 'Global COVID-19 pandemic.',
-                // ... add more as needed
-            };
-            const result = events[year] || 'No major event found for that year.';
-            console.log('[Helper] getHistoricalEvent result:', result);
-            return result;
-        }
-        function getNumerology(dob) {
-            console.log('[Helper] getNumerology called with:', dob);
-            const digits = dob.replace(/-/g, '').split('').map(Number);
-            let sum = digits.reduce((a, b) => a + b, 0);
-            while (sum > 9) sum = sum.toString().split('').reduce((a, b) => a + +b, 0);
-            console.log('[Helper] getNumerology result:', sum);
-            return sum;
-        }
-        function getNumerologyFact(num) {
-            console.log('[Helper] getNumerologyFact called with:', num);
-            const facts = {
-                1: 'Leadership and independence.',
-                2: 'Harmony and partnership.',
-                3: 'Creativity and joy.',
-                4: 'Stability and discipline.',
-                5: 'Adventure and freedom.',
-                6: 'Care and responsibility.',
-                7: 'Intellect and introspection.',
-                8: 'Power and ambition.',
-                9: 'Compassion and idealism.'
-            };
-            const result = facts[num] || 'A unique number!';
-            console.log('[Helper] getNumerologyFact result:', result);
-            return result;
-        }
-
-        // Thêm hàm toggleCard để mở/đóng từng card
-        function toggleCard(cardId) {
-            const card = document.getElementById(cardId);
-            if (card.classList.contains('hidden')) {
-                card.classList.remove('hidden');
-                setTimeout(() => card.classList.add('show'), 10);
-            } else {
-                card.classList.remove('show');
-                setTimeout(() => card.classList.add('hidden'), 300);
-            }
-        }
-
-        // Try another date button logic
-        document.getElementById('try-another').onclick = function() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.classList.add('hidden');
-            resultDiv.classList.remove('fade-in');
+        document.getElementById('dob').max = (new Date()).toISOString().slice(0, 10);
+        document.getElementById('try-another').addEventListener('click', () => {
             document.getElementById('dob').value = '';
+            document.getElementById('result').classList.add('hidden');
             document.getElementById('dob-error').style.display = 'none';
-            document.getElementById('basic-info').innerHTML = '';
-            document.getElementById('personality-traits').innerHTML = '';
-            document.getElementById('life-cycle').innerHTML = '';
-            document.getElementById('interesting-facts').innerHTML = '';
-            document.getElementById('spinner').style.display = 'none';
-            this.style.display = 'none';
-            document.getElementById('basic-info-card').classList.add('hidden');
-            document.getElementById('personality-traits-card').classList.add('hidden');
-            document.getElementById('life-cycle-card').classList.add('hidden');
-            document.getElementById('interesting-facts-card').classList.add('hidden');
-            document.getElementById('btn-personality').classList.add('hidden');
-            document.getElementById('btn-life-cycle').classList.add('hidden');
-            document.getElementById('btn-interesting').classList.add('hidden');
-            // Ẩn progress bar khi bắt đầu
-            document.getElementById('progress-bar-container').classList.add('hidden');
-            document.getElementById('progress-bar').style.width = '0%';
-            document.getElementById('card-buttons').classList.add('hidden');
-            autoOpenStopped = false;
-            clearAutoOpenTimeouts();
-            document.getElementById('shopping-suggestions-card').classList.add('hidden');
-            document.getElementById('btn-shopping').classList.add('hidden');
-            document.getElementById('shopping-suggestions').innerHTML = '';
-            document.getElementById('btn-shopping').classList.add('pulse-highlight');
-        };
+            document.getElementById('submit').disabled = false;
+            // Reset lại UI: show grid, ẩn preview, clear nội dung các card
+            const resultDiv = document.getElementById('result');
+            const gridContainer = resultDiv.querySelector('.grid');
+            let aiResponseContainer = document.getElementById('ai-response-container');
+            if (aiResponseContainer) aiResponseContainer.style.display = 'none';
+            if (gridContainer) gridContainer.style.display = '';
+            ['basic-info','personality-traits','life-cycle','interesting-facts','shopping-suggestions'].forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.innerHTML = '';
+                const card = document.getElementById(id+'-card');
+                if (card) card.classList.add('hidden');
+            });
+        });
+
+        // Đảm bảo luôn có #ai-result-container trong DOM trước khi render kết quả
+        let aiResultContainer = document.getElementById('ai-result-container');
+        if (!aiResultContainer) {
+            aiResultContainer = document.createElement('div');
+            aiResultContainer.id = 'ai-result-container';
+            aiResultContainer.className = 'ai-result-container';
+            // Chèn sau form nhập ngày sinh
+            const form = document.querySelector('.dob-form') || document.querySelector('form');
+            if (form && form.parentNode) {
+                form.parentNode.insertBefore(aiResultContainer, form.nextSibling);
+            } else {
+                document.body.appendChild(aiResultContainer);
+            }
+        }
     </script>
 </body>
 </html>
