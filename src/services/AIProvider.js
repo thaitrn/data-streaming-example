@@ -22,23 +22,32 @@ class GeminiProvider extends AIProvider {
     }
 
     try {
+      // Debug: log prompt và payload
+      console.log('Gemini prompt:', prompt)
+      const payload = {
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }]
+          }
+        ]
+      }
+      console.log('Gemini payload:', JSON.stringify(payload, null, 2))
+
       const response = await axios({
         method: 'post',
         url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${this.config.apiKey}`,
         headers: { 'Content-Type': 'application/json' },
-        data: {
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: prompt }]
-            }
-          ]
-        },
+        data: payload,
         responseType: 'stream'
       })
 
       return response
     } catch (error) {
+      // Debug: log toàn bộ response lỗi nếu có
+      if (error.response) {
+        console.error('Gemini error response:', error.response.status, error.response.data)
+      }
       this.handleError({ error, context: 'GeminiProvider' })
     }
   }

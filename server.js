@@ -3,10 +3,12 @@ const cors = require('cors');
 const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SHOW_AI_ASSISTANT = process.env.SHOW_AI_ASSISTANT !== 'false';
 
 // Security headers middleware
 app.use((req, res, next) => {
@@ -95,7 +97,10 @@ app.get('/api/health', (req, res) => {
 
 // Serve static files
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  // Inject config for frontend
+  html = html.replace('</head>', `<script>window.SHOW_AI_ASSISTANT = ${SHOW_AI_ASSISTANT};</script></head>`);
+  res.send(html);
 });
 
 // Error handling middleware

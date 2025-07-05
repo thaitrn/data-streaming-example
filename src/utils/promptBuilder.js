@@ -5,72 +5,52 @@ class PromptBuilder {
 
   buildPrompt({ dobData }) {
     const { lang } = this.config
-    
+    // Nếu provider là gemini thì dùng prompt tối giản
+    if (this.config.provider === 'gemini') {
+      return this.buildGeminiPrompt({ dobData, lang })
+    }
     if (lang === 'vi') {
       return this.buildVietnamesePrompt({ dobData })
     }
-    
     return this.buildEnglishPrompt({ dobData })
   }
 
+  buildGeminiPrompt({ dobData, lang }) {
+    const { age, zodiac, lifeStage, daysOld } = dobData
+    if (lang === 'vi') {
+      return `Tuổi: ${age.years} tuổi, ${age.months} tháng, ${age.days} ngày\nCung hoàng đạo: ${zodiac}\nGiai đoạn: ${lifeStage}\nSố ngày đã sống: ${daysOld}\nLiệt kê 2-3 đặc điểm nổi bật và 1-2 gợi ý phù hợp. Dùng emoji nếu có thể.`
+    }
+    return `Age: ${age.years} years, ${age.months} months, ${age.days} days\nZodiac: ${zodiac}\nLife stage: ${lifeStage}\nDays lived: ${daysOld}\nList 2-3 key facts and 1-2 short suggestions for this person. Use emoji if possible.`
+  }
+
   buildVietnamesePrompt({ dobData }) {
-    const { age, zodiac, numerology, lifeStage, daysOld, famousBirthdays, historicalEvent, milestones, shoppingSuggestions } = dobData
+    const { age, zodiac, numerology, lifeStage, daysOld } = dobData
 
-    return `Phân tích chi tiết về ngày sinh ${dobData.dob}:
-
-**Thông tin cơ bản:**
+    return `Với ngày sinh sau:
 - Tuổi: ${age.years} tuổi, ${age.months} tháng, ${age.days} ngày
 - Cung hoàng đạo: ${zodiac}
 - Giai đoạn cuộc sống: ${lifeStage}
-- Số ngày đã sống: ${daysOld} ngày
+- Số ngày đã sống: ${daysOld}
 
-**Tính cách và đặc điểm:**
-- Cung hoàng đạo: ${zodiac}
-- Thần số học: Số ${numerology}
-- Đặc điểm tính cách dựa trên cung hoàng đạo và thần số học
-
-**Phân tích chu kỳ cuộc sống:**
-- Giai đoạn hiện tại: ${lifeStage}
-- Các cột mốc quan trọng: ${milestones.join(', ')}
-
-**Sự thật thú vị:**
-- Người nổi tiếng sinh cùng ngày: ${famousBirthdays}
-- Sự kiện lịch sử: ${historicalEvent}
-
-**Gợi ý mua sắm phù hợp:**
-${shoppingSuggestions.map(item => `- ${item}`).join('\n')}
-
-Hãy phân tích chi tiết và đưa ra những insight sâu sắc về cuộc sống, tính cách, và tiềm năng của người này. Sử dụng markdown để format đẹp mắt.`
+Cho mỗi mục/phần (thông tin cơ bản, tính cách, chu kỳ, sự thật thú vị, gợi ý mua sắm):
+- Viết phần tóm tắt (Summary) ngắn gọn, tối đa 20 từ, 2-3 bullet, có emoji nếu phù hợp, chỉ nêu ý chính nhất.
+- Nếu cần, thêm phần "Chi tiết" (Details) tối đa 30 từ, 1-2 bullet/câu, chỉ thông tin bổ sung thực sự cần thiết.
+- Không lặp lại, không giải thích, không meta. Chỉ xuất ra đúng định dạng này.`
   }
 
   buildEnglishPrompt({ dobData }) {
-    const { age, zodiac, numerology, lifeStage, daysOld, famousBirthdays, historicalEvent, milestones, shoppingSuggestions } = dobData
+    const { age, zodiac, numerology, lifeStage, daysOld } = dobData
 
-    return `Analyze the date of birth ${dobData.dob} in detail:
-
-**Basic Information:**
+    return `Given the following date of birth:
 - Age: ${age.years} years, ${age.months} months, ${age.days} days
-- Zodiac Sign: ${zodiac}
-- Life Stage: ${lifeStage}
-- Days Lived: ${daysOld} days
+- Zodiac sign: ${zodiac}
+- Life stage: ${lifeStage}
+- Days lived: ${daysOld}
 
-**Personality and Characteristics:**
-- Zodiac Sign: ${zodiac}
-- Numerology: Number ${numerology}
-- Personality traits based on zodiac sign and numerology
-
-**Life Cycle Analysis:**
-- Current Stage: ${lifeStage}
-- Major Milestones: ${milestones.join(', ')}
-
-**Interesting Facts:**
-- Famous people born on this date: ${famousBirthdays}
-- Historical event: ${historicalEvent}
-
-**Shopping Suggestions:**
-${shoppingSuggestions.map(item => `- ${item}`).join('\n')}
-
-Please provide a detailed analysis with deep insights about this person's life, personality, and potential. Use markdown formatting for better readability.`
+For each section/card (Basic Information, Personality, Life Cycle, Interesting Facts, Shopping Suggestions):
+- Write a concise summary (max 20 words, 2-3 bullet points, each with an emoji if appropriate), only the most essential points.
+- If needed, add a "Details" section (max 30 words, 1-2 bullets/sentences, only truly necessary extra info).
+- Do not repeat, do not explain, no meta. Output only in this format.`
   }
 
   validatePrompt({ prompt }) {

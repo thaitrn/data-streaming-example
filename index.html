@@ -38,28 +38,27 @@
             from {
                 opacity: 0;
                 transform: translateY(10px);
-            }
+        }
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
+        }
         }
 
         /* 📱 2. Progressive Disclosure - Smooth card reveals */
         .card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid #ede9fe;
+            background: linear-gradient(135deg, #fff 80%, #f3f4f6 100%);
+            transition: box-shadow 0.2s, transform 0.2s;
         }
 
         .card.show {
-            opacity: 1;
-            transform: translateY(0);
+            animation: fadeInUp 0.5s;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 8px 32px 0 rgba(80,80,180,0.13);
+            transform: translateY(-4px) scale(1.02);
         }
 
         /* 🎯 3. Interactive Elements - Micro-interactions */
@@ -184,25 +183,36 @@
         /* 🔮 6. Predictive UX - Smart suggestions */
         .suggestions-container {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             flex-wrap: wrap;
+            justify-content: center;
             margin-top: 1rem;
         }
 
         .suggestion-chip {
-            padding: 0.5rem 1rem;
-            background: #f3f4f6;
+            padding: 0.75rem 1.5rem;
+            background: #fff;
             border-radius: 2rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            border: 1px solid transparent;
+            transition: all 0.2s;
+            font-size: 1rem;
+            border: 1px solid #e0e7ff;
+            box-shadow: 0 2px 8px 0 rgba(80,80,180,0.07);
+            font-weight: 500;
+            color: #5b21b6;
+            outline: none;
         }
 
-        .suggestion-chip:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-1px);
+        .suggestion-chip:hover, .suggestion-chip:focus {
+            background: #ede9fe;
+            color: #312e81;
+            border-color: #a5b4fc;
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .suggestion-chip:active {
+            background: #c7d2fe;
+            color: #1e293b;
         }
 
         /* 🎨 7. Multi-modal - Voice input support */
@@ -272,7 +282,7 @@
             
             .message.ai {
                 margin-right: 1rem;
-            }
+        }
         }
 
         /* Accessibility improvements */
@@ -294,15 +304,158 @@
             outline: 2px solid var(--primary);
             outline-offset: 2px;
         }
+
+        /* Card style polish */
+        .card {
+            box-shadow: 0 4px 24px 0 rgba(80,80,180,0.10);
+            border-radius: 1.25rem;
+            background: #fff;
+            margin-bottom: 1.5rem;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        /* Hide button for cards */
+        .hide-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #6b7280;
+            transition: background 0.2s;
+        }
+
+        .hide-btn:hover {
+            background: #e0e7ff;
+            color: #312e81;
+        }
+
+        /* Streaming/loading animation */
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #a5b4fc 0%, #818cf8 50%, #a5b4fc 100%);
+            background-size: 200% 100%;
+            animation: loadingBar 1.2s linear infinite;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes loadingBar {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Show more/less button style */
+        #basic-info-expand-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ede9fe;
+            color: #5b21b6;
+            border: none;
+            border-radius: 1.5rem;
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px 0 rgba(80,80,180,0.07);
+            outline: none;
+        }
+        #basic-info-expand-btn:hover, #basic-info-expand-btn:focus {
+            background: #c7d2fe;
+            color: #312e81;
+            box-shadow: 0 4px 16px 0 rgba(80,80,180,0.13);
+        }
+        /* Animation for expanding/collapsing */
+        .basic-info-content {
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+            overflow: hidden;
+            opacity: 1;
+            max-height: 2000px;
+        }
+        .basic-info-content.collapsed {
+            opacity: 0.85;
+            max-height: 6.5em;
+        }
+        /* Emoji in summary */
+        .basic-info-content .emoji {
+            font-size: 1.7em;
+            filter: drop-shadow(0 1px 2px #ede9fe);
+        }
+        /* Summary background */
+        .basic-info-content {
+            background: #f5f3ff;
+            border-radius: 1em;
+            padding: 1em 1.2em;
+            margin-bottom: 0.5em;
+        }
+        /* Show more/less button animation */
+        #basic-info-expand-btn span[aria-hidden='true'] {
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        #basic-info-expand-btn[aria-expanded='true'] span[aria-hidden='true'] {
+            transform: rotate(180deg);
+        }
+        /* Ripple effect for interactive buttons */
+        .suggestion-chip, .interactive-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .suggestion-chip:active::after, .interactive-btn:active::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 0; height: 0;
+            background: rgba(80,80,180,0.13);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: ripple 0.5s linear;
+        }
+        @keyframes ripple {
+            to {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+        /* Focus state for accessibility */
+        button:focus, .suggestion-chip:focus {
+            outline: 2px solid #a5b4fc;
+            outline-offset: 2px;
+        }
+        /* Micro-interaction highlight */
+        .basic-info-highlight {
+            animation: highlightFlash 0.7s;
+        }
+        @keyframes highlightFlash {
+            0% { background: #fef9c3; }
+            100% { background: transparent; }
+        }
     </style>
 </head>
 <body class="min-h-screen py-8">
     <div class="conversation-container">
+        <!-- AI Unavailable Banner -->
+        <div id="ai-unavailable-banner" class="hidden bg-yellow-100 text-yellow-800 rounded-lg px-4 py-2 mb-4 text-center text-sm font-medium shadow">
+            ⚠️ AI features are temporarily unavailable. You're seeing a local analysis.
+        </div>
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2">AI DOB Insights</h1>
             <p class="text-white/80 text-lg">Get personalized analysis of your birth date with streaming AI responses</p>
-        </div>
+            </div>
 
         <!-- Language Toggle -->
         <div class="flex justify-center mb-6">
@@ -364,6 +517,10 @@
 
         <!-- Results Container -->
         <div id="results" class="hidden">
+            <!-- Friendly Greeting -->
+            <div id="greeting" class="text-lg font-semibold text-indigo-700 mb-4 hidden">
+              👋 Hi! Here's what I found for you:
+            </div>
             <!-- AI Response -->
             <div id="ai-response" class="message ai mb-6">
                 <div class="flex items-center gap-2 mb-3">
@@ -379,45 +536,99 @@
             </div>
 
             <!-- Detailed Analysis Cards -->
-            <div id="analysis-cards" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
-                <!-- Basic Info -->
-                <div id="basic-info-card" class="card bg-white rounded-xl p-6 shadow-lg">
+            <div id="analysis-cards" class="w-full flex flex-col items-center gap-6 hidden">
+                <!-- Basic Info (full width, centered) -->
+                <div id="basic-info-card" class="card bg-white rounded-xl p-6 shadow-lg w-full max-w-2xl mx-auto">
                     <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
                         📊 Basic Information
                     </h3>
                     <div id="basic-info" class="text-gray-700"></div>
+                    <div class="flex gap-2 mt-4">
+                        <button class="interactive-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold hover:bg-indigo-200 transition-all" onclick="shareCard('basic-info-card')">
+                            📤 Share
+                        </button>
+                        <button class="interactive-btn bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition-all" onclick="submitFeedback('helpful')">
+                            👍 Helpful
+                        </button>
+                        <button class="interactive-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold hover:bg-yellow-200 transition-all" onclick="submitFeedback('suggest')">
+                            💡 Suggest improvement
+                        </button>
+                    </div>
                 </div>
-
-                <!-- Personality -->
-                <div id="personality-card" class="card bg-white rounded-xl p-6 shadow-lg">
-                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                        🧠 Personality & Zodiac
-                    </h3>
-                    <div id="personality-content" class="text-gray-700"></div>
-                </div>
-
-                <!-- Life Cycle -->
-                <div id="life-cycle-card" class="card bg-white rounded-xl p-6 shadow-lg">
-                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                        🌱 Life Cycle Analysis
-                    </h3>
-                    <div id="life-cycle-content" class="text-gray-700"></div>
-                </div>
-
-                <!-- Interesting Facts -->
-                <div id="facts-card" class="card bg-white rounded-xl p-6 shadow-lg">
-                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                        ✨ Interesting Facts
-                    </h3>
-                    <div id="facts-content" class="text-gray-700"></div>
-                </div>
-
-                <!-- Shopping Suggestions -->
-                <div id="shopping-card" class="card bg-white rounded-xl p-6 shadow-lg">
-                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                        🛍️ Shopping Suggestions
-                    </h3>
-                    <div id="shopping-content" class="text-gray-700"></div>
+                <!-- Other cards in a grid below, initially hidden -->
+                <div id="other-cards-grid" class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                    <!-- Personality -->
+                    <div id="personality-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            🧠 Personality & Zodiac
+                        </h3>
+                        <div id="personality-content" class="text-gray-700"></div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="interactive-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold hover:bg-indigo-200 transition-all" onclick="shareCard('personality-card')">
+                                📤 Share
+                            </button>
+                            <button class="interactive-btn bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition-all" onclick="submitFeedback('helpful')">
+                                👍 Helpful
+                            </button>
+                            <button class="interactive-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold hover:bg-yellow-200 transition-all" onclick="submitFeedback('suggest')">
+                                💡 Suggest improvement
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Life Cycle -->
+                    <div id="life-cycle-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            🌱 Life Cycle Analysis
+                        </h3>
+                        <div id="life-cycle-content" class="text-gray-700"></div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="interactive-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold hover:bg-indigo-200 transition-all" onclick="shareCard('life-cycle-card')">
+                                📤 Share
+                            </button>
+                            <button class="interactive-btn bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition-all" onclick="submitFeedback('helpful')">
+                                👍 Helpful
+                            </button>
+                            <button class="interactive-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold hover:bg-yellow-200 transition-all" onclick="submitFeedback('suggest')">
+                                💡 Suggest improvement
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Interesting Facts -->
+                    <div id="facts-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            ✨ Interesting Facts
+                        </h3>
+                        <div id="facts-content" class="text-gray-700"></div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="interactive-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold hover:bg-indigo-200 transition-all" onclick="shareCard('facts-card')">
+                                📤 Share
+                            </button>
+                            <button class="interactive-btn bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition-all" onclick="submitFeedback('helpful')">
+                                👍 Helpful
+                            </button>
+                            <button class="interactive-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold hover:bg-yellow-200 transition-all" onclick="submitFeedback('suggest')">
+                                💡 Suggest improvement
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Shopping Suggestions -->
+                    <div id="shopping-card" class="card bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            🛍️ Shopping Suggestions
+                        </h3>
+                        <div id="shopping-content" class="text-gray-700"></div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="interactive-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold hover:bg-indigo-200 transition-all" onclick="shareCard('shopping-card')">
+                                📤 Share
+                            </button>
+                            <button class="interactive-btn bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition-all" onclick="submitFeedback('helpful')">
+                                👍 Helpful
+                            </button>
+                            <button class="interactive-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold hover:bg-yellow-200 transition-all" onclick="submitFeedback('suggest')">
+                                💡 Suggest improvement
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -435,19 +646,19 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex gap-4 mt-6">
+            <div class="flex flex-col items-center gap-4 mt-8 mb-4">
                 <button 
                     id="try-another" 
-                    class="interactive-btn bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                    class="interactive-btn bg-indigo-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-700 transition-all"
                     onclick="resetForm()"
                 >
                     🔄 Try Another Date
                 </button>
                 <button 
-                    class="interactive-btn bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                    class="interactive-btn bg-purple-100 text-purple-700 px-6 py-3 rounded-full font-semibold hover:bg-purple-200 transition-all"
                     onclick="shareResults()"
                 >
-                    📤 Share Results
+                    📤 Share All Results
                 </button>
             </div>
         </div>
@@ -459,6 +670,10 @@
         let isProcessing = false;
         let accumulatedText = '';
         let eventSource = null;
+        let basicInfoAccum = '';
+        let isStreaming = true;
+        let firstBasicChunkReceived = false;
+        let basicInfoExpanded = false;
 
         const translations = {
             en: {
@@ -494,7 +709,7 @@
                 suggest: 'Đề xuất cải thiện'
             }
         };
-
+        
         function setLanguage(lang) {
             currentLang = lang;
             document.getElementById('lang-vi').classList.toggle('bg-white/20', lang === 'vi');
@@ -554,6 +769,9 @@
 
         // 💬 4. Conversational UI - Streaming response
         async function processDOB() {
+            firstBasicChunkReceived = false;
+            isStreaming = true;
+            basicInfoExpanded = false;
             const dob = document.getElementById('dob').value;
             const submitBtn = document.getElementById('submit');
             const resultsDiv = document.getElementById('results');
@@ -562,7 +780,7 @@
             // Reset UI
             errorDiv.classList.add('hidden');
             resultsDiv.classList.add('hidden');
-            
+
             if (!dob) {
                 errorDiv.textContent = translations[currentLang].invalidDate;
                 errorDiv.classList.remove('hidden');
@@ -578,6 +796,7 @@
             try {
                 // Show results container
                 resultsDiv.classList.remove('hidden');
+                document.getElementById('greeting').classList.remove('hidden');
                 document.getElementById('ai-status').textContent = translations[currentLang].aiStatus;
                 
                 // Start streaming
@@ -597,8 +816,26 @@
                         }
                         
                         if (data.chunk) {
-                            // 🚀 Streaming response with smooth animation
                             accumulatedText += data.chunk;
+                            // Parse for Basic Info section
+                            if (!firstBasicChunkReceived) {
+                                // Try to extract Basic Info from accumulatedText
+                                const basicInfo = parseAnalysisSections(accumulatedText)['basic-info'];
+                                if (basicInfo && basicInfo.trim().length > 0) {
+                                    firstBasicChunkReceived = true;
+                                    // Show Basic Info card immediately
+                                    const analysisCards = document.getElementById('analysis-cards');
+                                    analysisCards.classList.remove('hidden');
+                                    showCard('basic-info-card', basicInfo);
+                                }
+                            } else {
+                                // Update Basic Info card content while streaming
+                                const basicInfo = parseAnalysisSections(accumulatedText)['basic-info'];
+                                if (basicInfo) {
+                                    showCard('basic-info-card', basicInfo);
+                                }
+                            }
+                            updateBasicInfoStreaming(data.chunk);
                             updateStreamingContent(accumulatedText);
                         }
                     } catch (error) {
@@ -625,28 +862,75 @@
             contentDiv.scrollTop = contentDiv.scrollHeight;
         }
 
-        function finishAnalysis() {
-            // Show detailed cards
-            document.getElementById('analysis-cards').classList.remove('hidden');
-            
-            // Parse and display sections
-            const sections = parseAnalysisSections(accumulatedText);
-            
-            Object.entries(sections).forEach(([key, content]) => {
-                if (content) {
-                    showCard(`${key}-card`, content);
-                }
-            });
-            
-            // Update UI
-            document.getElementById('ai-status').textContent = translations[currentLang].complete;
-            document.getElementById('feedback-section').classList.add('show');
-            
-            // Close connection
-            if (eventSource) {
-                eventSource.close();
+        function updateBasicInfoStreaming(chunk) {
+            basicInfoAccum += chunk;
+            renderBasicInfoCard(basicInfoAccum);
+        }
+
+        // Progressive disclosure for Basic Info card
+        function getBasicInfoSummary(fullText) {
+            // Get the first 4 non-empty lines as summary
+            const lines = fullText.split('\n').filter(line => line.trim() !== '');
+            return lines.slice(0, 4).join('\n');
+        }
+        function renderBasicInfoCard(content) {
+            const basicInfoDiv = document.querySelector('#basic-info-card .text-gray-700');
+            if (!basicInfoDiv) return;
+            // Split content into summary and details
+            const lines = content.split('\n').filter(line => line.trim() !== '');
+            const summaryLines = lines.slice(0, 4);
+            const detailLines = lines.slice(4);
+            let html = '';
+            // Summary section
+            html += `<div class='basic-info-content'><strong>Summary</strong><br>${markdownToHtml(summaryLines.join('\n'))}</div>`;
+            // Details section (if any)
+            if (detailLines.length > 0) {
+                html += `<div class='mt-4'><strong>Details</strong><div class='details-content'>${markdownToHtml(detailLines.join('\n'))}</div></div>`;
             }
-            
+            basicInfoDiv.innerHTML = html;
+            // Add highlight class for micro-interaction
+            basicInfoDiv.classList.add('basic-info-highlight');
+            setTimeout(() => basicInfoDiv.classList.remove('basic-info-highlight'), 700);
+        }
+
+        // Store parsed sections globally
+        let analysisSections = {};
+        function finishAnalysis() {
+            isStreaming = false;
+            basicInfoAccum = '';
+            // Parse sections
+            analysisSections = parseAnalysisSections(accumulatedText);
+            // Show Basic Info card only
+            const analysisCards = document.getElementById('analysis-cards');
+            analysisCards.classList.remove('hidden');
+            // Hide all cards first
+            ['basic-info-card','personality-card','life-cycle-card','facts-card','shopping-card'].forEach(id => {
+                const card = document.getElementById(id);
+                if (card) card.classList.remove('show');
+            });
+            // Show Basic Info card with full content (progressive disclosure)
+            showCard('basic-info-card', analysisSections['basic-info']);
+            renderBasicInfoCard(analysisSections['basic-info']);
+            document.getElementById('other-cards-grid').classList.remove('hidden');
+            // Suggestion chips for other cards
+            let chipsHtml = '';
+            if (analysisSections['personality']) chipsHtml += `<div class="suggestion-chip" onclick="revealCard('personality-card')">🧠 See Personality</div>`;
+            if (analysisSections['life-cycle']) chipsHtml += `<div class="suggestion-chip" onclick="revealCard('life-cycle-card')">🌱 See Life Cycle</div>`;
+            if (analysisSections['facts']) chipsHtml += `<div class="suggestion-chip" onclick="revealCard('facts-card')">✨ See Interesting Facts</div>`;
+            if (analysisSections['shopping']) chipsHtml += `<div class="suggestion-chip" onclick="revealCard('shopping-card')">🛍️ See Shopping Suggestions</div>`;
+            // Place chips below Basic Info card
+            let chipsContainer = document.getElementById('progressive-chips');
+            if (!chipsContainer) {
+                chipsContainer = document.createElement('div');
+                chipsContainer.id = 'progressive-chips';
+                chipsContainer.className = 'suggestions-container mt-4';
+                const basicCard = document.getElementById('basic-info-card');
+                basicCard.parentNode.insertBefore(chipsContainer, basicCard.nextSibling);
+            }
+            chipsContainer.innerHTML = chipsHtml;
+            // Hide feedback until a card is shown
+            document.getElementById('feedback-section').classList.remove('show');
+            if (eventSource) eventSource.close();
             resetProcessingState();
         }
 
@@ -700,34 +984,34 @@
             document.getElementById('submit-text').textContent = translations[currentLang].analyze;
         }
 
-                 // 🔄 5. Feedback Mechanisms
-         async function submitFeedback(type) {
-             const feedbackData = {
-                 type: type,
-                 timestamp: new Date().toISOString(),
-                 language: currentLang,
-                 userAgent: navigator.userAgent
-             };
-             
-             try {
-                 const response = await fetch('/api/feedback', {
-                     method: 'POST',
-                     headers: {
-                         'Content-Type': 'application/json'
-                     },
-                     body: JSON.stringify(feedbackData)
-                 });
-                 
-                 if (response.ok) {
-                     const feedbackSection = document.getElementById('feedback-section');
-                     feedbackSection.innerHTML = '<div class="text-green-500">Thank you for your feedback! 🙏</div>';
-                 } else {
-                     console.error('Feedback submission failed');
-                 }
-             } catch (error) {
-                 console.error('Feedback error:', error);
-             }
-         }
+        // 🔄 5. Feedback Mechanisms
+        async function submitFeedback(type) {
+            const feedbackData = {
+                type: type,
+                timestamp: new Date().toISOString(),
+                language: currentLang,
+                userAgent: navigator.userAgent
+            };
+            
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(feedbackData)
+                });
+                
+                if (response.ok) {
+                    const feedbackSection = document.getElementById('feedback-section');
+                    feedbackSection.innerHTML = '<div class="text-green-500">Thank you for your feedback! 🙏</div>';
+                } else {
+                    console.error('Feedback submission failed');
+                }
+            } catch (error) {
+                console.error('Feedback error:', error);
+            }
+        }
 
         // 🔮 6. Predictive UX - Smart actions
         function shareResults() {
@@ -774,10 +1058,44 @@
             return marked.parse(markdown);
         }
 
+        // Reveal card function: inject content when showing
+        function revealCard(cardId) {
+            ['personality-card','life-cycle-card','facts-card','shopping-card'].forEach(id => {
+                const card = document.getElementById(id);
+                if (card && card.id !== cardId) card.classList.remove('show');
+            });
+            // Map cardId to section key
+            const sectionMap = {
+                'personality-card': 'personality',
+                'life-cycle-card': 'life-cycle',
+                'facts-card': 'facts',
+                'shopping-card': 'shopping'
+            };
+            const sectionKey = sectionMap[cardId];
+            if (sectionKey && analysisSections[sectionKey]) {
+                showCard(cardId, analysisSections[sectionKey]);
+            }
+            document.getElementById('feedback-section').classList.add('show');
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             updateUIText();
-            
+            // Hide AI Assistant block and Personalized Analysis card if config is off
+            if (typeof window.SHOW_AI_ASSISTANT !== 'undefined' && !window.SHOW_AI_ASSISTANT) {
+                // Hide AI Assistant block
+                const aiResponse = document.getElementById('ai-response');
+                if (aiResponse) aiResponse.style.display = 'none';
+                // Hide local analysis card if present
+                const localCard = document.getElementById('local-analysis-card');
+                if (localCard) localCard.style.display = 'none';
+                // Optionally, hide the analysis cards section as well
+                const analysisCards = document.getElementById('analysis-cards');
+                if (analysisCards) analysisCards.classList.add('hidden');
+                // Hide the AI unavailable banner
+                const aiBanner = document.getElementById('ai-unavailable-banner');
+                if (aiBanner) aiBanner.classList.add('hidden');
+            }
             // Enter key support
             document.getElementById('dob').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !isProcessing) {
